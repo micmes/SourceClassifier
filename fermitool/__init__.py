@@ -1,0 +1,1 @@
+from fermitool.version import __version__
