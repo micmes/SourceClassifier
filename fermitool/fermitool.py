@@ -16,7 +16,14 @@ def open_fits(path):
     except OSError as e:
         print(e)
 
+def select_data(data, df_condition):
+        """Selects dataframe rows based on condition.
+        """
+        return data[df_condition]
 
 if __name__ == '__main__':
     data_path = os.path.abspath('gll_psc_v21.fit')
     data = open_fits(data_path)
+
+    condition_blazar = data['CLASS1'].str.match('(bll)|(BLL)')
+    blazars = select_data(data, condition_blazar)
