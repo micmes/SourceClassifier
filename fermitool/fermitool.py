@@ -3,27 +3,58 @@ import pandas
 from astropy.io import fits
 from astropy.table import Table
 
-def open_fits(path):
-    """Opens a FITS file, given the path to the file, gets rid of multidimensional
-    columns and returns a pandas dataframe. 
+class Fermi_Dataset:
     """
-    try:
-        with fits.open(path) as hdul:
-            t_astropy = Table(hdul[1].data)
-            col1D = [col1D for col1D in t_astropy.colnames if len(t_astropy[col1D].shape) <= 1]
-            data = t_astropy[col1D].to_pandas()
-            return data
-    except OSError as e:
-        print(e)
+    Class capable to perform data analysis and to visualize the given dataset in a graphical fashion.
+    The Fermi_Dataset class is targeted at the 4FGL forth source catalog.
+    """
 
-def select_data(data, df_condition):
-        """Selects dataframe rows based on condition.
+    def __init__(self, handler):
         """
-        return data[df_condition]
+        Constructor. 
+        The argument is the file handler for the FITS file containing the data. 
+        """
+        self._df = self.fits2df(handler)
+    
+    @property
+    def df(self):
+        return self._df
+    
+
+    def fits2df(self, hdul):
+        """
+        Given the hdul of the FITS file, this method gets rid of multidimensional
+        columns and returns a pandas dataframe. 
+        """
+        try:
+            fits_data = hdul[1].data
+        except Exception as e:
+            print(e)
+
+        t_astropy = Table(fits_data)
+        col1D = [col1D for col1D in t_astropy.colnames if len(t_astropy[col1D].shape) <= 1]
+        data = t_astropy[col1D].to_pandas()
+    
+        return data
+
+
+    def select_data(self, df_condition):
+        """
+        Selects dataframe rows based on df_condition.
+        """
+        return self._df[df_condition]
+
 
 if __name__ == '__main__':
-    data_path = os.path.abspath('gll_psc_v21.fit')
-    data = open_fits(data_path)
 
-    condition_blazar = data['CLASS1'].str.match('(bll)|(BLL)')
-    blazars = select_data(data, condition_blazar)
+    data_path = os.path.abspath('../data/gll_psc_v21.fit')
+    try:
+        with fits.open(data_path) as hdul:
+            data_4FGL = Fermi_Dataset(hdul)
+    except OSError as e:
+        print(e)
+    
+    #prove
+    condition_blazar = data_4FGL.df['CLASS1'].str.match('(bll)|(BLL)')
+    filtered_blazars = data_4FGL.select_data(condition_blazar)
+    print(filtered_blazars['CLASS1'])
