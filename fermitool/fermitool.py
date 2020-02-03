@@ -2,7 +2,9 @@ import os
 from astropy.io import fits
 from astropy.table import Table
 import astropy.coordinates as coord
+import astropy.units as u
 from matplotlib import pyplot as plt
+
 
 # requires setup.sh to run
 source_root = os.environ["SOURCE_ROOT"]
@@ -101,7 +103,19 @@ class Fermi_Dataset:
     def galactic_map(self, filter=False):
         """
         Plot a galactic map given sources"""
+        if filter==True:
+            d = self._df
+        else:
+            d = self._filtered_df
 
+        ra = coord.Angle(d['RAJ2000'] * u.degree)
+        ra = ra.wrap_at(180 * u.degree)
+        dec = coord.Angle(d['DEJ2000'] * u.degree)
+
+        fig = plt.figure(figsize=(8, 6))
+        ax = fig.add_subplot(111, projection="mollweide")
+        ax.scatter(ra.radian, dec.radian)
+        plt.show()
 
     def dist_models(self):
         """
@@ -128,7 +142,7 @@ if __name__ == '__main__':
     data_4FGL.filtering(data_4FGL.df['CLASS1'].str.match('(psr)|(PSR)'))
     
     data_4FGL.columns()
-    data_4FGL.col('RAJ2000',filter=True)
+    data_4FGL.col('DEJ2000',filter=True)
     '''
     data_4FGL.df['Energy_Flux100'] = data_4FGL.df['Energy_Flux100'].multiply(1e12)
     high_latitude_sources = data_4FGL[(abs(data_4FGL.df['GLAT'])>30)]
