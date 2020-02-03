@@ -15,29 +15,21 @@ class Fermi_Dataset:
         Constructor. 
         The argument is the file handler for the FITS file containing the data. 
         """
-        self._df = self.fits2df(handler)
-    
-    @property
-    def df(self):
-        return self._df
-    
 
-    def fits2df(self, hdul):
-        """
-        Given the hdul of the FITS file, this method gets rid of multidimensional
-        columns and returns a pandas dataframe. 
-        """
         try:
-            fits_data = hdul[1].data
+            fits_data = handler[1].data
         except Exception as e:
             print(e)
 
         t_astropy = Table(fits_data)
         col1D = [col1D for col1D in t_astropy.colnames if len(t_astropy[col1D].shape) <= 1]
         data = t_astropy[col1D].to_pandas()
-    
-        return data
 
+        self._df = data
+    
+    @property
+    def df(self):
+        return self._df
 
     def select_data(self, df_condition):
         """
@@ -67,6 +59,10 @@ class Fermi_Dataset:
         
     
     def dist_models(self, dataframe=None):
+        """
+        Plots the distribution of the 3 models of the sources. 
+        :dataframe: dataframe of sources. If not specified, it is set to df.
+        """
         if dataframe == None:
             dataframe = self._df
         self.sourcehist(dataframe['SpectrumType'], title='Distribution of Models', 
@@ -86,7 +82,7 @@ if __name__ == '__main__':
     #prove
     condition_blazar = data_4FGL.df['CLASS1'].str.match('(bll)|(BLL)')
     filtered_blazars = data_4FGL.select_data(condition_blazar)
-   #print(filtered_blazars['CLASS1'])
+    #print(filtered_blazars['CLASS1'])
     
     data_4FGL.df['Energy_Flux100'] = data_4FGL.df['Energy_Flux100'].multiply(1e12)
     high_latitude_sources = data_4FGL.select_data(abs(data_4FGL.df['GLAT'])>30)
