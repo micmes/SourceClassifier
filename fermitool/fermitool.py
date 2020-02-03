@@ -2,6 +2,7 @@ import os
 import pandas
 from astropy.io import fits
 from astropy.table import Table
+import matplotlib.pyplot as plt
 
 class Fermi_Dataset:
     """
@@ -44,6 +45,27 @@ class Fermi_Dataset:
         """
         return self._df[df_condition]
 
+    def sourcehist(self, x, title='Histogram', xlabel='x', ylabel='y',
+               **kwargs):
+        """
+        This function provides a histogram plot given a single array in
+        input. Most of the features are inherited from the matplotlib hist
+        function.
+        :x: an array of values
+        :title: the title of the histogram shown in the plot
+        :xlabel: x label shown in the plot
+        :ylabel: y label shown in the plot
+        :kwargs: the same parameters of the plt.hist function
+        :return: a histogram plot of values.
+        """
+
+        plt.hist(x, **kwargs)
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.show()
+        return
+
 
 if __name__ == '__main__':
 
@@ -57,4 +79,6 @@ if __name__ == '__main__':
     #prove
     condition_blazar = data_4FGL.df['CLASS1'].str.match('(bll)|(BLL)')
     filtered_blazars = data_4FGL.select_data(condition_blazar)
-    print(filtered_blazars['CLASS1'])
+   #print(filtered_blazars['CLASS1'])
+
+    print(data_4FGL.df)
