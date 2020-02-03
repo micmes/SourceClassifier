@@ -7,21 +7,33 @@ Follow https://docs.microsoft.com/it-it/windows/wsl/install-win10 and then, afte
 *
 
 ## Initial setup (Ubuntu)
-To create a virtual environment and install all the required packages (the first line can be runned the first time only):
+The first time, in order to create a virtual environment and install all the required packages, run the following lines:
 ```
 python3 -m venv venv 
 source venv/bin/activate
 pip install -r requirements.txt
 ```
+it is strictly recommended to check for new packages once in a while, running the third line. From now on, on reboot, just type:
+```
+source venv/bin/activate
+```
+to activate virtualenv.
 
-In order to setup the environment variables, one can run alternatively 
-```
-bash setup_u.sh
-```
-which adds the project root to the python environment (once for all), or 
+### Environment variables
+In order to setup the environment variables, run 
 ```
 source setup.sh
 ```
-which requires to run code from inside that shell (and this operation should be done every time on reboot). 
+every time on reboot. 
 
+## Uninstall 
+Simply delete 'SourceClassifier' folder. 
 
+## Developer options
+
+### Testing
+To run tests, just 
+```
+cd tests
+make
+```
