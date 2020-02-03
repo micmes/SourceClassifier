@@ -19,7 +19,6 @@ class testFermiTool(unittest.TestCase):
     def test_sourcehist(self):
         """
         Test the sourcehist function"""
-        print(TEST_DF.df.columns)
         TEST_DF.source_hist('RAJ2000', title='Ra(J2000)',
                            xlabel='bins', ylabel="occurrences")
 
@@ -28,6 +27,12 @@ class testFermiTool(unittest.TestCase):
         TEST_DF.source_hist('RAJ2000', filter=True,
                             title='RA(J2000) with condition',
                             xlabel='bins', ylabel='occurrences')
+
+    def test_galactic_map(self):
+        """
+        Test the galactic map function
+        """
+        TEST_DF.galactic_map(filter=True)
 
 if __name__ == '__main__':
     unittest.main()
