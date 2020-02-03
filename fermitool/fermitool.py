@@ -2,7 +2,7 @@ import os
 import pandas
 from astropy.io import fits
 from astropy.table import Table
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
 
 class Fermi_Dataset:
     """
@@ -63,9 +63,16 @@ class Fermi_Dataset:
         plt.title(title)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        plt.show()
-        return
-
+        plt.savefig(title)
+        
+    
+    def dist_models(self, dataframe=None):
+        if dataframe == None:
+            dataframe = self._df
+        self.sourcehist(dataframe['SpectrumType'], title='Distribution of Models', 
+                            xlabel='Spectrum Model', ylabel='Number of sources', 
+                            bins=3, histtype='bar')
+        
 
 if __name__ == '__main__':
 
@@ -80,5 +87,7 @@ if __name__ == '__main__':
     condition_blazar = data_4FGL.df['CLASS1'].str.match('(bll)|(BLL)')
     filtered_blazars = data_4FGL.select_data(condition_blazar)
    #print(filtered_blazars['CLASS1'])
-
-    print(data_4FGL.df)
+    
+    data_4FGL.df['Energy_Flux100'] = data_4FGL.df['Energy_Flux100'].multiply(1e12)
+    high_latitude_sources = data_4FGL.select_data(abs(data_4FGL.df['GLAT'])>30)
+    data_4FGL.dist_models()
