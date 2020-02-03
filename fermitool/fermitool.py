@@ -1,8 +1,11 @@
 import os
-import pandas
 from astropy.io import fits
 from astropy.table import Table
 from matplotlib import pyplot as plt
+
+# requires setup.sh to run
+source_root = os.environ["SOURCE_ROOT"]
+output_path = source_root + '/output'
 
 class Fermi_Dataset:
     """
@@ -31,48 +34,62 @@ class Fermi_Dataset:
     def df(self):
         return self._df
 
-    def select_data(self, df_condition):
+    def __getitem__(self, df_condition):
         """
         Selects dataframe rows based on df_condition.
         """
         return self._df[df_condition]
 
-    def sourcehist(self, x, title='Histogram', xlabel='x', ylabel='y',
-               **kwargs):
+    def columns(self):
+        """
+        Show column names
+        """
+        return self._df.columns
+
+    def source_hist(self, colname, df_condition=None, title='Histogram', xlabel='x',
+                    ylabel='y', savefig=False, **kwargs):
         """
         This function provides a histogram plot given a single array in
         input. Most of the features are inherited from the matplotlib hist
         function.
-        :x: an array of values
-        :title: the title of the histogram shown in the plot
-        :xlabel: x label shown in the plot
-        :ylabel: y label shown in the plot
-        :kwargs: the same parameters of the plt.hist function
-        :return: a histogram plot of values.
+        :colname: The name of the column to plot (str)
+        :df_condition: select dataframe rows
+        :title: the title of the histogram shown in the plot (str)
+        :xlabel: x label shown in the plot (str)
+        :ylabel: y label shown in the plot (str)
+        :savefig: choose whether to save the fig or not
+        :kwargs: the same parameters of the plt.hist function (str)
         """
-
-        plt.hist(x, **kwargs)
+        if df_condition==None:
+            plt.hist(self.df[colname], **kwargs)
+        else:
+            plt.hist(self.df[df_condition][colname], **kwargs)
         plt.title(title)
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        plt.savefig(title)
-        
-    
-    def dist_models(self, dataframe=None):
+        if savefig:
+            plt.savefig('{}/{}'.format(output_path,title))
+        else:
+            plt.show()
+        return
+
+    def galactic_map(self):
         """
-        Plots the distribution of the 3 models of the sources. 
-        :dataframe: dataframe of sources. If not specified, it is set to df.
+        Plot a galactic map given sources"""
+
+
+    def dist_models(self):
         """
-        if dataframe == None:
-            dataframe = self._df
-        self.sourcehist(dataframe['SpectrumType'], title='Distribution of Models', 
+        Plots the distribution of the 3 models of the sources.
+        """
+        self.source_hist('SpectrumType', title='Distribution of Models',
                             xlabel='Spectrum Model', ylabel='Number of sources', 
                             bins=3, histtype='bar')
         
 
 if __name__ == '__main__':
 
-    data_path = os.path.abspath('../data/gll_psc_v21.fit')
+    data_path = os.environ["SOURCE_ROOT"] + '/data/gll_psc_v21.fit'
     try:
         with fits.open(data_path) as hdul:
             data_4FGL = Fermi_Dataset(hdul)
@@ -81,9 +98,10 @@ if __name__ == '__main__':
     
     #prove
     condition_blazar = data_4FGL.df['CLASS1'].str.match('(bll)|(BLL)')
-    filtered_blazars = data_4FGL.select_data(condition_blazar)
-    #print(filtered_blazars['CLASS1'])
+    filtered_blazars = data_4FGL[condition_blazar]
+    print(filtered_blazars['CLASS1'])
     
     data_4FGL.df['Energy_Flux100'] = data_4FGL.df['Energy_Flux100'].multiply(1e12)
-    high_latitude_sources = data_4FGL.select_data(abs(data_4FGL.df['GLAT'])>30)
+    high_latitude_sources = data_4FGL[(abs(data_4FGL.df['GLAT'])>30)]
     data_4FGL.dist_models()
+    # high_latitude_sources.dist_models()
