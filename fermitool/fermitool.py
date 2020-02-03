@@ -1,6 +1,7 @@
 import os
 from astropy.io import fits
 from astropy.table import Table
+import astropy.coordinates as coord
 from matplotlib import pyplot as plt
 
 # requires setup.sh to run
@@ -52,6 +53,15 @@ class Fermi_Dataset:
         self._filtered_df = self._df[df_condition]
         return self
 
+    def col(self, colname, filter=False):
+        """
+        Show the content of a given column
+        """
+        if filter==True:
+            print(self._df[colname])
+        else:
+            print(self._filtered_df[colname])
+
     def columns(self):
         """
         Show column names
@@ -88,7 +98,7 @@ class Fermi_Dataset:
         plt.savefig(title)
         return
 
-    def galactic_map(self):
+    def galactic_map(self, filter=False):
         """
         Plot a galactic map given sources"""
 
@@ -118,6 +128,7 @@ if __name__ == '__main__':
     data_4FGL.filtering(data_4FGL.df['CLASS1'].str.match('(psr)|(PSR)'))
     
     data_4FGL.columns()
+    data_4FGL.col('RAJ2000',filter=True)
     '''
     data_4FGL.df['Energy_Flux100'] = data_4FGL.df['Energy_Flux100'].multiply(1e12)
     high_latitude_sources = data_4FGL[(abs(data_4FGL.df['GLAT'])>30)]
