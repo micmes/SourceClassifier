@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 # make sure a __init__.py file exist in the import folder
 # requires setup.sh to run
-from fermitool.fermitool_v2 import *
+from fermitool.fermitool import *
 
 # import fits file
 data_path = os.environ["SOURCE_ROOT"] + '/data/gll_psc_v21.fit'
