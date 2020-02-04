@@ -25,7 +25,8 @@ class testFermiTool(unittest.TestCase):
 
 	def test_sourcehist(self):
 		"""
-		Test the sourcehist function"""
+		Test the sourcehist function
+		"""
 		TEST_DF.source_hist('RAJ2000', title='TEST_Ra(J2000)',
 							xlabel='bins', ylabel="occurrences",
 							savefig=True)
@@ -37,7 +38,9 @@ class testFermiTool(unittest.TestCase):
 																	savefig=True)
 
 	def test_filtering(self):
-		"""Test filtering function"""
+		"""
+		Test filtering function
+		"""
 		TEST_DF.col('RAJ2000')
 		TEST_DF.filtering(TEST_DF.df['RAJ2000'] > 180).col('RAJ2000')
 
