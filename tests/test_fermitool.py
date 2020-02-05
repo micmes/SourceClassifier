@@ -51,7 +51,13 @@ class testFermiTool(unittest.TestCase):
 		TEST_DF.galactic_map(title='TEST_all_data', savefig=True)
 		TEST_DF.filtering(TEST_DF.df['DEJ2000'] > 0).galactic_map(title='TEST_Only_positive_dec',
 																  savefig=True, c='DEJ2000', colorbar=True)
-
+	
+	def test_plot_spectral_param(self):
+		"""
+		Test the plot spectral param method.
+		"""
+		TEST_DF.filtering(TEST_DF.df['Signif_Avg']>=30).plot_spectral_param(title='TEST_spectral_param only significant sources',
+																				savefig=True)
 
 if __name__ == '__main__':
 	unittest.main()

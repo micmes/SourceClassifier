@@ -164,6 +164,8 @@ class Fermi_Dataset:
         fig.show()
       return
 
+  
+
 if __name__ == '__main__':
   # import fits file
   data_path = os.environ["SOURCE_ROOT"] + '/data/gll_psc_v21.fit'
@@ -183,10 +185,8 @@ if __name__ == '__main__':
   data_4FGL = Fermi_Dataset(data)
   print(data_4FGL.df.columns)
   
-  brightest_sources = data_4FGL.filtering(data_4FGL.df['Signif_Avg']>=30)
   
-  brightest_sources.plot_spectral_param(savefig=True)
-
+ 
   
   # prove
   #data_4FGL.filtering(data_4FGL.df['CLASS1'].str.match('(psr)|(PSR)'))
