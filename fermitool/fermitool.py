@@ -4,7 +4,7 @@ from astropy.table import Table
 import astropy.coordinates as coord
 import astropy.units as u
 from matplotlib import pyplot as plt
-import numpy as np
+import seaborn as sns
 
 # requires setup.sh to run
 source_root = os.environ["SOURCE_ROOT"]
@@ -49,11 +49,12 @@ class Fermi_Dataset:
   def clean_classes(self):
       """
       Removes extra spaces and lowers all the characters in the CLASS1 column of the dataframe.
+      This operation is useful for plots, when we don't need to distinguish between associated and identified sources.
       """
       self._df['CLASS1'] = self._df['CLASS1'].str.strip()
       self._df['CLASS1'] = self._df['CLASS1'].str.lower()
       
-      return 
+      return Fermi_Dataset(self._df)
 
   def source_hist(self, colname, title='Histogram', xlabel='x',
           ylabel='y', savefig=False, **kwargs):
@@ -141,21 +142,19 @@ class Fermi_Dataset:
       :savefig: choose whether to save the fig or not (in the output folder)
       :kwargs: set the points parameters according to 'matplotlib.pyplot.scatter' module
       """
-      self.clean_classes
+      self.clean_classes()
       
-      x1 = self.df['PLEC_Index']
-      y1 = self.df['PLEC_Expfactor']
-      x2 = self.df['LP_Index']
-      y2 = self.df['LP_beta']
+      data1 = self._df[['PLEC_Index', 'PLEC_Expfactor', 'CLASS1']]
+      data2 = self._df[['LP_Index', 'LP_beta', 'CLASS1']]
       
       fig, (ax1, ax2) = plt.subplots(1, 2)
-      
-      ax1.scatter(x1, y1)
-      ax1.set_yscale('log')
-      
-      ax2.scatter(x2, y2)
-      ax2.set_yscale('log')
-      
+      sns.scatterplot(x='PLEC_Index', y='PLEC_Expfactor', hue='CLASS1', data=data1, ax=ax1)
+      sns.scatterplot(x='LP_Index', y='LP_beta', hue='CLASS1', data=data2, ax=ax2)
+
+      ax1.legend().set_visible(False)
+      ax2.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+      plt.tight_layout()
+
       if savefig:
       # create dir if it doesn't exist
         if not os.path.isdir(output_path):
@@ -183,14 +182,11 @@ if __name__ == '__main__':
   # define an istance
   data_4FGL = Fermi_Dataset(data)
   print(data_4FGL.df.columns)
-  #E_peak = data_4FGL.df['Pivot_Energy'] * np.exp( (2-data_4FGL.df['LP_Index']) / (2* data_4FGL.df['LP_beta']))
-  
-  
   
   brightest_sources = data_4FGL.filtering(data_4FGL.df['Signif_Avg']>=30)
   
-  #brightest_sources.plot_spectral_param(savefig=True)
-  
+  brightest_sources.plot_spectral_param(savefig=True)
+
   
   # prove
   #data_4FGL.filtering(data_4FGL.df['CLASS1'].str.match('(psr)|(PSR)'))
