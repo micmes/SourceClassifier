@@ -5,7 +5,8 @@ import astropy.coordinates as coord
 import astropy.units as u
 from matplotlib import pyplot as plt
 import seaborn as sns
-
+import numpy as np
+import pandas as pd
 # requires setup.sh to run
 source_root = os.environ["SOURCE_ROOT"]
 output_path = source_root + '/output'
@@ -164,6 +165,13 @@ class Fermi_Dataset:
         fig.show()
       return
 
+  def energyflux_map(self, title='Energy Flux map', savefig=False, **kwargs):
+    """
+    Plot the galactic map with the energy flux between 100 MeV and 100 GeV as gradient.
+    """
+    self.galactic_map(title=title, savefig=savefig, c='Energy_Flux100', colorbar=True)
+    return
+
   
 
 if __name__ == '__main__':
@@ -185,8 +193,7 @@ if __name__ == '__main__':
   data_4FGL = Fermi_Dataset(data)
   print(data_4FGL.df.columns)
   
-  
- 
+  data_4FGL.filtering(data_4FGL.df['Signif_Avg']>=30).energyflux_map(savefig=True)
   
   # prove
   #data_4FGL.filtering(data_4FGL.df['CLASS1'].str.match('(psr)|(PSR)'))
