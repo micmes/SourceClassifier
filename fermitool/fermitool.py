@@ -256,9 +256,7 @@ if __name__ == '__main__':
   print(data_4FGL.df.columns)
   print(data_4FGL.df['GLON'])
   print(data_4FGL.df['GLAT'])
-  
-  
-  
+
   # prove
   #data_4FGL.filtering(data_4FGL.df['CLASS1'].str.match('(psr)|(PSR)'))
     

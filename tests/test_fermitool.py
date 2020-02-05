@@ -53,6 +53,20 @@ class testFermiTool(unittest.TestCase):
 																  savefig=True, c='DEJ2000', colorbar=True)
 		TEST_DF.filtering(TEST_DF.df['DEJ2000'] > 0).galactic_map(coord_type='galactic', title='TEST_Only_positive_dec_but_galactic',
 																  savefig=True, c='DEJ2000', colorbar=True)
+	def test_energyflux_map(self):
+		"""
+		Test the energyflux_map method.
+		"""
+		TEST_DF.energyflux_map(savefig=True)
+	
+	
+	def test_dist_models(self):
+		"""
+		Test the dist_models method.
+		"""
+		TEST_DF.dist_models(savefig=True)
+	
+	
 	def test_plot_spectral_param(self):
 		"""
 		Test the plot spectral param method.
