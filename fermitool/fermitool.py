@@ -85,12 +85,14 @@ class Fermi_Dataset:
       plt.show()
     return
 
-  def galactic_map(self, title='Galactic Map', savefig=False, c=None,
+  def galactic_map(self, coord_type='equatorial', title='Galactic Map', savefig=False, c=None,
            colorbar=False, **kwargs):
     """
     Plot a galactic map given sources. We're assuming that the right
     ascension and the declination columns are labeled by 'RAJ2000' and
     'DEJ2000' respectively.
+    :coord_type: type of the given coordinates. String values are admitted:
+    'equatorial' (default) or 'galactic'.
     :title:the title of the histogram shown in the plot (str)
     :savefig: choose whether to save the fig or not (in the output folder)
     :c: colours in the scatter plot. Every value that satisfies the
@@ -107,13 +109,22 @@ class Fermi_Dataset:
     if c in self.columns():
       c = d[c]
 
-    ra = coord.Angle(d['RAJ2000'] * u.degree)
-    ra = ra.wrap_at(180 * u.degree)
-    dec = coord.Angle(d['DEJ2000'] * u.degree)
+    if coord_type == 'equatorial':
+        lon = d['RAJ2000']
+        lat = d['DEJ2000']
+    if coord_type == 'galactic':
+        lon = d['GLON']
+        lat = d['GLAT']
+    else:
+        print('not valid') # to be corrected: raise an error
+
+    lon = coord.Angle(lon * u.degree)
+    lon = lon.wrap_at(180 * u.degree)
+    lat = coord.Angle(lat * u.degree)
 
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(111, projection="mollweide")
-    ax1 = ax.scatter(ra.radian, dec.radian, c=c, **kwargs)
+    ax1 = ax.scatter(lon.radian, lat.radian, c=c, **kwargs)
 
     if colorbar:
       fig.colorbar(ax1)
@@ -192,6 +203,8 @@ if __name__ == '__main__':
   # define an istance
   data_4FGL = Fermi_Dataset(data)
   print(data_4FGL.df.columns)
+  print(data_4FGL.df['GLON'])
+  print(data_4FGL.df['GLAT'])
   
   data_4FGL.filtering(data_4FGL.df['Signif_Avg']>=30).energyflux_map(savefig=True)
   
