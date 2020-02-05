@@ -57,8 +57,13 @@ class testFermiTool(unittest.TestCase):
 		"""
 		Test the plot spectral param method.
 		"""
-		TEST_DF.filtering(TEST_DF.df['Signif_Avg']>=30).plot_spectral_param(title='TEST_spectral_param only significant sources',
-																				savefig=True)
+		TEST_DF.filtering(TEST_DF.df['Signif_Avg']>=30).plot_spectral_param(title='TEST_spectral_param only significant sources',savefig=True)
+	
+	def test_compare_variability(self):
+		"""
+		Test the plot of the compare_variability method.
+		"""
+		TEST_DF.compare_variability(savefig=True)																		
 
 if __name__ == '__main__':
 	unittest.main()
