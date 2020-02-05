@@ -6,7 +6,6 @@ import astropy.units as u
 from matplotlib import pyplot as plt
 import seaborn as sns
 import numpy as np
-import pandas as pd
 # requires setup.sh to run
 source_root = os.environ["SOURCE_ROOT"]
 output_path = source_root + '/output'
@@ -58,7 +57,7 @@ class Fermi_Dataset:
       return Fermi_Dataset(self._df)
 
   def source_hist(self, colname, title='Histogram', xlabel='x',
-          ylabel='y', savefig=False, **kwargs):
+          ylabel='y', savefig=False, xlog=False, ylog=False, **kwargs):
     """
     This method provides a histogram plot given a single array in
     input. Most of the features are inherited from the matplotlib hist
@@ -76,6 +75,12 @@ class Fermi_Dataset:
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
+
+    if xlog==True:
+      plt.xscale('log')
+    if ylog==True:
+      plt.yscale('log')
+
     if savefig:
       # create dir if it doesn't exist
       if not os.path.isdir(output_path):
@@ -139,13 +144,29 @@ class Fermi_Dataset:
       fig.show()
     return
 
-  def dist_models(self):
+  def dist_models(self, title='Distribution of Spectral Models', savefig=False, **kwargs):
     """
-    Plots the distribution of the 3 models of the sources.
+    Plots the bar chart of the 3 models of the sources.
     """
-    self.source_hist('SpectrumType', title='Distribution of Models',
-             xlabel='Spectrum Model', ylabel='Number of sources',
-             bins=3, histtype='bar')
+    y_pos = np.arange(3)
+    objects= ('PowerLaw', 'LogParabola', 'PLSuperExpCutoff')
+    occurences = self.df['SpectrumType'].value_counts()
+    
+    fig = plt.figure()
+    plt.bar(y_pos, occurences, align='center', **kwargs)
+    plt.xticks(y_pos, objects)
+    plt.title(title)
+    plt.ylabel('Number of sources')
+    
+    if savefig:
+      # create dir if it doesn't exist
+      if not os.path.isdir(output_path):
+        os.makedirs(output_path)
+      fig.savefig(output_path + '/' + title + '.png')
+    else:
+      fig.show()
+    return
+    
     
   def plot_spectral_param(self, title='Spectral Parameters', savefig=False, **kwargs):
       """
@@ -182,8 +203,38 @@ class Fermi_Dataset:
     """
     self.galactic_map(title=title, savefig=savefig, c='Energy_Flux100', colorbar=True)
     return
-
   
+  def dist_variability(self, title='Distribution of the variability index', savefig=False, **kwargs):
+    """
+    Plot the distribution of the variability index for the sources.
+    """
+    self.source_hist(colname='Variability_Index', title=title, xlabel='Variability Index',
+                      ylabel='Number of sources', savefig=savefig, xlog=True, ylog=True,
+                      range=(0,10000), bins=100, histtype='step')
+    
+  def compare_variability(self, title='Comparison of Varibility index for 2 month intervals and that for 12 months',
+                          savefig=False, **kwargs):
+    """
+    Plot Variability Index 2 month vs Variability Index 12 month.
+    """
+    x = self._df['Variability_Index']
+    y = self._df['Variability2_Index']
+
+    fig = plt.figure()
+    plt.scatter(x, y, marker='+')
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.xlabel('12 month')
+    plt.ylabel('2 month')
+
+    if savefig:
+      # create dir if it doesn't exist
+        if not os.path.isdir(output_path):
+            os.makedirs(output_path)
+        fig.savefig(output_path + '/' + title + '.png')
+    else:
+          fig.show()
+    return
 
 if __name__ == '__main__':
   # import fits file
@@ -206,7 +257,7 @@ if __name__ == '__main__':
   print(data_4FGL.df['GLON'])
   print(data_4FGL.df['GLAT'])
   
-  data_4FGL.filtering(data_4FGL.df['Signif_Avg']>=30).energyflux_map(savefig=True)
+  
   
   # prove
   #data_4FGL.filtering(data_4FGL.df['CLASS1'].str.match('(psr)|(PSR)'))
