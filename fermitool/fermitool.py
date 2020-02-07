@@ -6,10 +6,10 @@ import astropy.units as u
 from matplotlib import pyplot as plt
 import seaborn as sns
 import numpy as np
+import scipy.stats as stats
 # requires setup.sh to run
 source_root = os.environ["SOURCE_ROOT"]
 output_path = source_root + '/output'
-
 
 class Fermi_Dataset:
   """
@@ -54,6 +54,24 @@ class Fermi_Dataset:
       self._df = self._df.assign(CLASS1=self._df['CLASS1'].apply(lambda x: x.strip().lower()))
       return Fermi_Dataset(self._df)
 
+  def clean_nan(self, col):
+    #self._df = self._df.dropna(subset=[col])
+    self._df = self._df.fillna(self._df.mean())
+    return Fermi_Dataset(self._df)
+    
+  def show_plot(self, savefig=False, title='Title'):
+    """
+    Shows the plot or saves the figure in the output folder. This method is always called
+    when we make a plot.
+    """
+    if savefig:
+      # create dir if it doesn't exist
+      if not os.path.isdir(output_path):
+        os.makedirs(output_path)
+      plt.savefig(output_path + '/' + title + '.png')
+    else:
+      plt.show()
+
   def source_hist(self, colname, title='Histogram', xlabel='x',
           ylabel='y', savefig=False, xlog=False, ylog=False, **kwargs):
     """
@@ -74,18 +92,12 @@ class Fermi_Dataset:
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
 
-    if xlog==True:
+    if xlog:
       plt.xscale('log')
-    if ylog==True:
+    if ylog:
       plt.yscale('log')
 
-    if savefig:
-      # create dir if it doesn't exist
-      if not os.path.isdir(output_path):
-        os.makedirs(output_path)
-      plt.savefig(output_path + '/' + title + '.png')
-    else:
-      plt.show()
+    self.show_plot(savefig=savefig, title=title)
 
   def galactic_map(self, coord_type='equatorial', title='Galactic Map', savefig=False, c=None,
            colorbar=False, **kwargs):
@@ -132,13 +144,7 @@ class Fermi_Dataset:
       fig.colorbar(ax1)
     plt.title(title)
 
-    if savefig:
-      # create dir if it doesn't exist
-      if not os.path.isdir(output_path):
-        os.makedirs(output_path)
-      fig.savefig(output_path + '/' + title + '.png')
-    else:
-      fig.show()
+    self.show_plot(savefig=savefig, title=title)
 
   def dist_models(self, title='Distribution of Spectral Models', savefig=False, **kwargs):
     """
@@ -154,14 +160,7 @@ class Fermi_Dataset:
     plt.title(title)
     plt.ylabel('Number of sources')
     
-    if savefig:
-      # create dir if it doesn't exist
-      if not os.path.isdir(output_path):
-        os.makedirs(output_path)
-      fig.savefig(output_path + '/' + title + '.png')
-    else:
-      fig.show()
-    return
+    self.show_plot(savefig=savefig, title=title)
     
     
   def plot_spectral_param(self, title='Spectral Parameters', savefig=False, **kwargs):
@@ -184,14 +183,7 @@ class Fermi_Dataset:
       ax2.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
       plt.tight_layout()
 
-      if savefig:
-      # create dir if it doesn't exist
-        if not os.path.isdir(output_path):
-            os.makedirs(output_path)
-        fig.savefig(output_path + '/' + title + '.png')
-      else:
-        fig.show()
-      return
+      self.show_plot(savefig=savefig, title=title)
 
   def energyflux_map(self, title='Energy Flux map', savefig=False, **kwargs):
     """
@@ -204,9 +196,12 @@ class Fermi_Dataset:
     """
     Plot the distribution of the variability index for the sources.
     """
+    self.clean_nan('Variability_Index')
+    
     self.source_hist(colname='Variability_Index', title=title, xlabel='Variability Index',
                       ylabel='Number of sources', savefig=savefig, xlog=True, ylog=True,
-                      range=(0,10000), bins=100, histtype='step')
+                      range=(0,500), bins=200, histtype='step')
+    
     
   def compare_variability(self, title='Comparison of Varibility index for 2 month intervals and that for 12 months',
                           savefig=False, **kwargs):
@@ -223,14 +218,7 @@ class Fermi_Dataset:
     plt.xlabel('12 month')
     plt.ylabel('2 month')
 
-    if savefig:
-      # create dir if it doesn't exist
-        if not os.path.isdir(output_path):
-            os.makedirs(output_path)
-        fig.savefig(output_path + '/' + title + '.png')
-    else:
-          fig.show()
-    return
+    self.show_plot(savefig=savefig, title=title)
 
 if __name__ == '__main__':
   # import fits file
@@ -253,8 +241,7 @@ if __name__ == '__main__':
   print(data_4FGL.df['GLON'])
   print(data_4FGL.df['GLAT'])
   
-  data_4FGL.dist_variability(savefig=True)
-  print(data_4FGL.df['Variability_Index'].sample(n=100))
+  
   
   
   # prove
