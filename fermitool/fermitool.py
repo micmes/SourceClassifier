@@ -51,9 +51,7 @@ class Fermi_Dataset:
       Removes extra spaces and lowers all the characters in the CLASS1 column of the dataframe.
       This operation is useful for plots, when we don't need to distinguish between associated and identified sources.
       """
-      self._df['CLASS1'] = self._df['CLASS1'].str.strip()
-      self._df['CLASS1'] = self._df['CLASS1'].str.lower()
-      
+      self._df = self._df.assign(CLASS1=self._df['CLASS1'].apply(lambda x: x.strip().lower()))
       return Fermi_Dataset(self._df)
 
   def source_hist(self, colname, title='Histogram', xlabel='x',
@@ -88,7 +86,6 @@ class Fermi_Dataset:
       plt.savefig(output_path + '/' + title + '.png')
     else:
       plt.show()
-    return
 
   def galactic_map(self, coord_type='equatorial', title='Galactic Map', savefig=False, c=None,
            colorbar=False, **kwargs):
@@ -142,7 +139,6 @@ class Fermi_Dataset:
       fig.savefig(output_path + '/' + title + '.png')
     else:
       fig.show()
-    return
 
   def dist_models(self, title='Distribution of Spectral Models', savefig=False, **kwargs):
     """
@@ -256,7 +252,11 @@ if __name__ == '__main__':
   print(data_4FGL.df.columns)
   print(data_4FGL.df['GLON'])
   print(data_4FGL.df['GLAT'])
-
+  
+  data_4FGL.dist_variability(savefig=True)
+  print(data_4FGL.df['Variability_Index'].sample(n=100))
+  
+  
   # prove
   #data_4FGL.filtering(data_4FGL.df['CLASS1'].str.match('(psr)|(PSR)'))
     
