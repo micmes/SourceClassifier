@@ -6,7 +6,7 @@ import astropy.units as u
 from matplotlib import pyplot as plt
 import seaborn as sns
 import numpy as np
-import scipy.stats as stats
+
 # requires setup.sh to run
 source_root = os.environ["SOURCE_ROOT"]
 output_path = source_root + '/output'
