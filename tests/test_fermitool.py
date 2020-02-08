@@ -82,6 +82,12 @@ class testFermiTool(unittest.TestCase):
 		"""
 		TEST_DF.filtering(TEST_DF.df['Signif_Avg']>=30).plot_spectral_param(title='TEST_spectral_param only significant sources',savefig=True)
 	
+	def test_dist_variability(self):
+		"""
+		Test the dist_varibility_index method.
+		"""
+		TEST_DF.dist_variability(savefig=True)
+
 	def test_compare_variability(self):
 		"""
 		Test the plot of the compare_variability method.
