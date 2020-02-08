@@ -1,5 +1,4 @@
 import unittest
-from unittest.mock import patch
 
 # make sure a __init__.py file exist in the import folder
 # requires setup.sh to run
@@ -37,6 +36,8 @@ class testFermiTool(unittest.TestCase):
 																	xlabel='bins', ylabel='occurrences',
 																	savefig=True)
 
+		TEST_DF.source_hist('SpectrumType', title='TEST_Spectralmodel_withsourcehist', savefig=True)
+
 	def test_filtering(self):
 		"""
 		Test filtering function
@@ -48,11 +49,19 @@ class testFermiTool(unittest.TestCase):
 		"""
 		Test the galactic map function
 		"""
-		TEST_DF.galactic_map(title='TEST_all_data', savefig=True)
-		TEST_DF.filtering(TEST_DF.df['DEJ2000'] > 0).galactic_map(title='TEST_Only_positive_dec',
-																  savefig=True, c='DEJ2000', colorbar=True)
+		TEST_DF.galactic_map(title='TEST_all_data_CLASS', color='CLASS1',
+							 savefig=True, palette='prism_r', marker='x',
+							 alpha=0.5)
+		TEST_DF.galactic_map(title='TEST_all_data_DEC', color='DEJ2000',
+							 savefig=True, palette='YlGn', marker='x',
+							 alpha=0.1)
+
+		TEST_DF.filtering(TEST_DF.df['DEJ2000'] > 0).galactic_map(title='TEST_Only_positive_dec', color='CLASS1',
+																  savefig=True)
 		TEST_DF.filtering(TEST_DF.df['DEJ2000'] > 0).galactic_map(coord_type='galactic', title='TEST_Only_positive_dec_but_galactic',
-																  savefig=True, c='DEJ2000', colorbar=True)
+																  color='CLASS1',
+																  savefig=True)
+
 	def test_energyflux_map(self):
 		"""
 		Test the energyflux_map method.
