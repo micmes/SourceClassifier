@@ -65,7 +65,7 @@ if args.spectra:
 
 #Energy plots
 if args.energy:
-    data_4FGL.energflux_map(savefig=True)
+    data_4FGL.energyflux_map(savefig=True)
 
 
 print(args)
