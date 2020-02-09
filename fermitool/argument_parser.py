@@ -42,7 +42,8 @@ parser.add_argument("--spectra", action="store_true",
                     help= "plot the distribution of the 3 models and the spectral parameters")
 parser.add_argument("--energy", action="store_true",
                     help="plot the energy flux map")
-
+parser.add_argument('--localize', action='store_true',
+                    help='plot the position of the sources, divided by type')
 args = parser.parse_args()
 
 #Show columns
@@ -66,6 +67,16 @@ if args.spectra:
 #Energy plots
 if args.energy:
     data_4FGL.energyflux_map(savefig=True)
+
+# Localization plots
+if args.localize:
+    data_4FGL.galactic_map('galactic', title='LOC_all_sources', savefig=True, color='CLASS1')
+    c = data_4FGL._df['CLASS1']
+    #print(data_4FGL._df[['ASSOC_FGL','ASSOC_TEV','CLASS1','CLASS2','ASSOC1','ASSOC2']].isin(['pwn']).any())
+    #print(data_4FGL.filtering((c == 'psr'))._df[['CLASS1','ASSOC1']])
+    data_4FGL.filtering((c == 'psr') | (c == 'pwn')).galactic_map('galactic', title='LOC_psr', savefig=True, color='CLASS1')
+
+
 
 
 print(args)
