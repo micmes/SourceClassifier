@@ -21,7 +21,9 @@ class Fermi_Dataset:
   def __init__(self, data):
     """
     Constructor.
-    :data: pandas dataframe containing the data
+
+
+    :param data:  pandas dataframe containing the data
     """
     self._df = data
 
@@ -44,6 +46,8 @@ class Fermi_Dataset:
   def filtering(self, df_condition):
     """
     Selects dataframe rows based on df_condition.
+
+    :param df_condition: The condition based on which you filter the dataframe. 
     """
     return Fermi_Dataset(self._df[df_condition])
   
@@ -64,6 +68,10 @@ class Fermi_Dataset:
     """
     Shows the plot or saves the figure in the output folder. This method is always called
     when we make a plot.
+
+
+    :param savefig: if True, save the figure in the output directory
+    :param title: title of the plot
     """
     if savefig:
       # create dir if it doesn't exist
@@ -79,13 +87,17 @@ class Fermi_Dataset:
     This method provides a histogram plot given a single array in
     input. Most of the features are inherited from the matplotlib hist
     function.
-    :colname: The name of the column to plot (str)
-    :filter: Boolean value. If true, plot data from filtered_df
-    :title: the title of the histogram shown in the plot (str)
-    :xlabel: x label shown in the plot (str)
-    :ylabel: y label shown in the plot (str)
-    :savefig: choose whether to save the fig or not
-    :kwargs: the same parameters of the plt.hist function (str)
+
+
+    :param colname:  The name of the column to plot (str)
+    :param filter:  Boolean value. If true, plot data from filtered_df
+    :param title:  the title of the histogram shown in the plot (str)
+    :param xlabel:  x label shown in the plot (str)
+    :param ylabel:  y label shown in the plot (str)
+    :param savefig:  choose whether to save the fig or not
+    :param xlog: if True, set xscale to log
+    :param ylog: if True, set yscale to log
+    :param kwargs:  the same parameters of the plt.hist function (str)
     """
     plt.figure()
     plt.hist(self.df[colname], **kwargs)
@@ -103,6 +115,11 @@ class Fermi_Dataset:
   def dist_models(self, title='Distribution of Spectral Models', savefig=False, **kwargs):
     """
     Plots the bar chart of the 3 models of the sources.
+
+
+    :param title: title of the plot
+    :param savefig: if True, save figure in output directory
+    :param kwargs: kwargs of matplotlib.pyplot.bar
     """
     y_pos = np.arange(3)
     objects= ('PowerLaw', 'LogParabola', 'PLSuperExpCutoff')
@@ -119,9 +136,11 @@ class Fermi_Dataset:
   def plot_spectral_param(self, title='Spectral Parameters', savefig=False, **kwargs):
     """
     Plot the spectral parameters of the sources.
-    :title: title of the plot
-    :savefig: choose whether to save the fig or not (in the output folder)
-    :kwargs: set the points parameters according to 'matplotlib.pyplot.scatter' module
+
+
+    :param title:  title of the plot
+    :param savefig:  choose whether to save the fig or not (in the output folder)
+    :param kwargs:  set the points parameters according to 'matplotlib.pyplot.scatter' module
     """
     self.clean_classes()
     
@@ -141,6 +160,10 @@ class Fermi_Dataset:
   def energyflux_map(self, title='Energy Flux map', savefig=False, **kwargs):
     """
     Plot the galactic map with the energy flux between 100 MeV and 100 GeV as gradient.
+
+
+    :param title: title of the plot
+    :param savefig: if True, save figure in the output directory
     """
     self.galactic_map(title=title, savefig=savefig, c='Energy_Flux100', colorbar=True)
     return
@@ -148,6 +171,11 @@ class Fermi_Dataset:
   def dist_variability(self, title='Distribution of the variability index', savefig=False, **kwargs):
     """
     Plot the distribution of the variability index for the sources.
+
+
+    :param title: title of the plot
+    :param savefig: if True, save figure in the output directory
+    :param kwargs: kwargs of matplotlib.pyplot.hist module
     """
     self.clean_nan('Variability_Index')
     
@@ -159,12 +187,17 @@ class Fermi_Dataset:
                           savefig=False, **kwargs):
     """
     Plot Variability Index 2 month vs Variability Index 12 month.
+
+
+    :param title: title of the plot
+    :param savefig: if True, save figure in the output directory
+    :param kwargs: kwargs of matplotlib.pyplot.scatter module
     """
     x = self._df['Variability_Index']
     y = self._df['Variability2_Index']
 
     fig = plt.figure()
-    plt.scatter(x, y, marker='+')
+    plt.scatter(x, y, marker='+', **kwargs)
     plt.xscale('log')
     plt.yscale('log')
     plt.xlabel('12 month')
@@ -176,16 +209,19 @@ class Fermi_Dataset:
            savefig=False, color=None, palette=None, marker='None',
            alpha=None):
     """
-        Plot a galactic map given sources. We're assuming that the right
-        ascension and the declination columns are labeled by 'RAJ2000' and
-        'DEJ2000' respectively.
-        :coord_type: type of the given coordinates. String values are admitted:
-        'equatorial' (default) or 'galactic'.
-        :title:the title of the histogram shown in the plot (str)
-        :savefig: choose whether to save the fig or not (in the output folder)
-        :color: the name of the column to color the points. It can be a
-        numeric value or a string value.
-        """
+    Plot a galactic map given sources. We're assuming that the right
+    ascension and the declination columns are labeled by 'RAJ2000' and
+    'DEJ2000' respectively.
+
+    
+    :param coord_type:  type of the given coordinates. String values are admitted:
+                  'equatorial' (default) or 'galactic'.
+    :param title:  the title of the histogram shown in the plot (str)
+    :param savefig:  choose whether to save the fig or not (in the output folder)
+    :param color:  the name of the column to color the points. It can be a
+             numeric value or a string value.
+
+    """
 
     self.clean_classes()
 
