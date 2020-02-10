@@ -34,7 +34,7 @@ class Fermi_Dataset:
   Class capable to perform data analysis and to visualize the given dataset in a graphical fashion.
   The constructer takes a DataFrame as an argument. 
   The Fermi_Dataset class is targeted at the 4FGL forth source catalog: all the column names are 
-  those of the 4FGL, so we suggest to take a look at the following link <https://arxiv.org/abs/1902.10045>
+  those of the 4FGL. We therefore suggest to take a look at the following link <https://arxiv.org/abs/1902.10045>
   in order to get familiar with the data.
   """
 
@@ -46,20 +46,29 @@ class Fermi_Dataset:
     """
     self._df = data
 
+
   @property
   def df(self):
     """
     DataFrame which contains the Fermi data.
     """
     return self._df
+
   
   def filtering(self, df_condition):
     """
-    Selects dataframe rows based on df_condition.
+    Selects dataframe rows based on df_condition. Returns an object with the filtered data.
 
-    :param df_condition: The condition based on which you filter the dataframe. 
+    :param df_condition: The condition based on which you filter the dataframe.
+                          Make sure that the condition is written conformly to the pandas module, as follows:
+                          Fermi_Dataset_Instance.df['Column_Name'] ><= value
     """
-    return Fermi_Dataset(self._df[df_condition])
+    try:
+      return Fermi_Dataset(self._df[df_condition])
+    except Exception as e:
+      print('Oops! Give me a valid condition', e)    
+      raise
+
   
   def clean_classes(self):
     """
@@ -69,14 +78,20 @@ class Fermi_Dataset:
     self._df = self._df.assign(CLASS1=self._df['CLASS1'].apply(lambda x: x.strip().lower()))
     return Fermi_Dataset(self._df)
 
+
   def clean_nan(self, col):
     """
     Given the column name, remove the rows of the dataframe where the values of that column are NaN.
 
     :param col: name of the column to clean
     """
-    self._df = self._df.dropna(subset=[col])
-    return Fermi_Dataset(self._df)
+    try:
+      self._df = self._df.dropna(subset=[col])
+      return Fermi_Dataset(self._df)
+    except KeyError as e:
+      print('Oops! Seems like you got the column name {} wrong. To see column names, try print(Obj.df.columns)'.format(e))
+      raise
+    
     
   def source_hist(self, colname, title='Histogram', xlabel='x',
           ylabel='y', savefig=False, xlog=False, ylog=False, **kwargs):
@@ -95,6 +110,7 @@ class Fermi_Dataset:
     :param ylog: if True, set yscale to log
     :param kwargs:  the same parameters of the plt.hist function (str)
     """
+    assert colname in self._df.columns, 'Column name not valid. To see column names, try print(Obj.df.columns) .' 
     plt.figure()
     plt.hist(self.df[colname], **kwargs)
     plt.title(title)
@@ -108,6 +124,7 @@ class Fermi_Dataset:
 
     show_plot(savefig=savefig, title=title)
 
+
   def dist_models(self, title='Distribution of Spectral Models', savefig=False, **kwargs):
     """
     Plots the bar chart of the 3 models of the sources.
@@ -120,13 +137,14 @@ class Fermi_Dataset:
     objects= ('PowerLaw', 'LogParabola', 'PLSuperExpCutoff')
     occurences = self.df['SpectrumType'].value_counts()
     
-    fig = plt.figure()
+    plt.figure()
     plt.bar(y_pos, occurences, align='center', **kwargs)
     plt.xticks(y_pos, objects)
     plt.title(title)
     plt.ylabel('Number of sources')
     
     show_plot(savefig=savefig, title=title)
+
     
   def plot_spectral_param(self, title='Spectral Parameters', savefig=False, **kwargs):
     """
@@ -151,6 +169,7 @@ class Fermi_Dataset:
 
     show_plot(savefig=savefig, title=title)
 
+
   def energyflux_map(self, title='Energy Flux map', savefig=False, **kwargs):
     """
     Plot the galactic map with the energy flux between 100 MeV and 100 GeV as gradient.
@@ -159,7 +178,7 @@ class Fermi_Dataset:
     :param savefig: if True, save figure in the output directory
     """
     self.galactic_map(title=title, savefig=savefig, color='Energy_Flux100')
-    return
+
   
   def dist_variability(self, title='Distribution of the variability index', savefig=False, **kwargs):
     """
@@ -187,7 +206,7 @@ class Fermi_Dataset:
     x = self._df['Variability_Index']
     y = self._df['Variability2_Index']
 
-    fig = plt.figure()
+    plt.figure()
     plt.scatter(x, y, marker='+', **kwargs)
     plt.xscale('log')
     plt.yscale('log')
@@ -212,18 +231,20 @@ class Fermi_Dataset:
              numeric value or a string value.
 
     """
+    # Sanity check
+    assert color in self._df.columns, 'Color not valid. To see column names, try print(Obj.df.columns) .'
+    assert (coord_type == 'equatorial' or coord_type == 'galactic'), 'Use only equatorial or galactic coordinates, please!'
+    
     self.clean_classes()
-
-    # choose which type of coordinates i want to plot
     color_label = color
+
     if coord_type == 'equatorial':
       lon_label = 'RAJ2000'
       lat_label = 'DEJ2000'
     if coord_type == 'galactic':
       lon_label = 'GLON'
       lat_label = 'GLAT'
-    else:
-      print('not valid')  # to be corrected: raise an error
+    
     lon = self._df[lon_label]
     lat = self._df[lat_label]
     col = self._df[color_label]
@@ -288,7 +309,8 @@ if __name__ == '__main__':
   print(data_4FGL.df.columns)
   print(data_4FGL.df['GLON'])
   print(data_4FGL.df['GLAT'])
-
+  
+  
   # prove
   # data_4FGL.filtering(data_4FGL.df['CLASS1'].str.match('(psr)|(PSR)'))
 
