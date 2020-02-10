@@ -1,5 +1,4 @@
 import unittest
-
 # make sure a __init__.py file exist in the import folder
 # requires setup.sh to run
 from fermitool.fermitool import *
@@ -37,6 +36,20 @@ class testFermiTool(unittest.TestCase):
 																	savefig=True)
 
 		TEST_DF.source_hist('SpectrumType', title='TEST_Spectralmodel_withsourcehist', savefig=True)
+
+	def test_cleanclasses(self):
+		"""
+		Test the clean classes function.
+		"""
+		cleaned_dataset = TEST_DF.clean_nan('CLASS1').clean_classes()
+		self.assertTrue(cleaned_dataset.df['CLASS1'].str.islower().all(), 'classes are not all lowercase')
+
+	def test_cleanNaN(self):
+		"""
+		Test the clean_nan function.
+		"""
+		cleanedNaN_dataset = TEST_DF.clean_nan('Signif_Avg')
+		self.assertFalse(cleanedNaN_dataset.df['Signif_Avg'].isnull().values.any())
 
 	def test_filtering(self):
 		"""
