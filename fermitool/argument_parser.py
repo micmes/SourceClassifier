@@ -76,7 +76,4 @@ if args.localize:
     #print(data_4FGL.filtering((c == 'psr'))._df[['CLASS1','ASSOC1']])
     data_4FGL.filtering((c == 'psr') | (c == 'pwn')).galactic_map('galactic', title='LOC_psr', savefig=True, color='CLASS1')
 
-
-
-
 print(args)

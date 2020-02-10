@@ -8,6 +8,8 @@ import seaborn as sns
 import numpy as np
 from pandas.api.types import is_numeric_dtype
 import pandas as pd
+import warnings
+
 # requires setup.sh to run
 source_root = os.environ["SOURCE_ROOT"]
 output_path = source_root + '/output'
@@ -215,20 +217,25 @@ class Fermi_Dataset:
 
     show_plot(savefig=savefig, title=title)
 
-  def galactic_map(self, coord_type='equatorial', title='Galactic Map',
-           savefig=False, color=None, palette=None, marker='None',
-           alpha=None):
+  def galactic_map(self, coord_type='equatorial', title='Galactic_Map',
+           savefig=False, color=None, **kwargs):
     """
     Plot a galactic map given sources. We're assuming that the right
     ascension and the declination columns are labeled by 'RAJ2000' and
-    'DEJ2000' respectively.
+    'DEJ2000' respectively, or 'GLAT' and 'GLON' in case galactic
+    coordinates are requested.
 
     :param coord_type:  type of the given coordinates. String values are admitted:
-                  'equatorial' (default) or 'galactic'.
-    :param title:  the title of the histogram shown in the plot (str)
+    'equatorial' (default) or 'galactic'.
+    :param title: the title of the histogram shown in the plot (string type)
     :param savefig:  choose whether to save the fig or not (in the output directory)
-    :param color:  the name of the column to color the points. It can be a
-             numeric value or a string value.
+    :param color:  the name of the column to color the points. If string
+    value, the axes will be drawn with 'seaborn.scatterplot' module,
+    while if the column is numeric type 'matplotlib.pyplot.scatter' will
+    take its place. (NOT totally working yet!)
+    :param **kwargs: other parameters passed directly to
+    'seaborn.scatterplot' or 'matplotlib.pyplot.scatter' depending on the
+    case (see color parameter).
 
     """
     # Sanity check
@@ -261,18 +268,15 @@ class Fermi_Dataset:
     ax = plt.axes(projection='mollweide')
     ax.grid(b=True)
 
-    #if values are discrete, than plot a legend
+    #if values are discrete, then plot a legend
     if color == 'CLASS1':
       sns.scatterplot(x=lon_label, y=lat_label, hue=color_label,
-              data=coord_df, ax=ax, palette=palette,
-              markers=marker, alpha=alpha)
-      ax.set_position(pos = [0.15, 0.2, 0.6, 0.6])
-      ax.legend(loc='center left', bbox_to_anchor=(1.05, 0.5), prop={'size':9},
-            fancybox=True, shadow=True)
+              data=coord_df, **kwargs)
+      #ax.set_position(pos = [0.15, 0.2, 0.6, 0.6])
+      ax.legend(loc='lower center', ncol=6)
     # else plot a colorbar
     elif color in self._df.columns and is_numeric_dtype(self._df[color_label]):
-      scat = ax.scatter(lon, lat, c=col.tolist(), cmap=palette, marker=marker,
-                alpha=alpha)
+      scat = ax.scatter(lon, lat, c=col.tolist(), **kwargs)
       ax.set_xlabel(lon_label)
       ax.set_ylabel(lat_label)
       cbar = fig.colorbar(scat)
@@ -280,11 +284,10 @@ class Fermi_Dataset:
     # else draw with no colors
     else:
       if color is not None:
-        print('Warning: not valid value for color column') #raise warning
-      ax.scatter(lon, lat, marker=marker, alpha=alpha)
-
+        # raise warning
+        warnings.warn('Not valid value for color column!')
+      ax.scatter(lon, lat, **kwargs)
     ax.set_title(title)
-
 
     show_plot(savefig=savefig, title=title)
 
@@ -318,3 +321,6 @@ if __name__ == '__main__':
   # all sources:
   data_4FGL.galactic_map(coord_type='galactic', title='All_sources',
                color='CLASS1', savefig=True)
+  c = data_4FGL._df['CLASS1']
+  data_4FGL.filtering((c == 'psr') | (c == 'pwn')).galactic_map('galactic', title='LOC_psr', savefig=True,
+                                                                color='CLASS1', alpha=.7, marker='.', s=100)
