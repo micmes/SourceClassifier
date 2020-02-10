@@ -42,8 +42,8 @@ class testFermiTool(unittest.TestCase):
 		"""
 		Test filtering function
 		"""
-		TEST_DF.col('RAJ2000')
-		TEST_DF.filtering(TEST_DF.df['RAJ2000'] > 180).col('RAJ2000')
+		TEST_DF.df['RAJ2000']
+		TEST_DF.filtering(TEST_DF.df['RAJ2000'] > 180).df['RAJ2000']
 
 	def test_galactic_map(self):
 		"""
