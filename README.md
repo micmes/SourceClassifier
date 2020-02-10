@@ -1,6 +1,10 @@
 # SourceClassifier
 An algorithm to classify the sources in the 4FGL catalog
 
+[![Build Status](https://travis-ci.com/micmes/SourceClassifier.svg?branch=master)](https://travis-ci.com/micmes/SourceClassifier)
+
+[![Documentation Status](https://readthedocs.org/projects/sourceclassifier/badge/?version=latest)](https://sourceclassifier.readthedocs.io/en/latest/?badge=latest)
+
 ## Initial setup (Windows)
 Follow https://docs.microsoft.com/it-it/windows/wsl/install-win10 and then, after opening bash, proceed with _Initial setup (Ubuntu)_.
 
