@@ -8,6 +8,8 @@ import seaborn as sns
 import numpy as np
 from pandas.api.types import is_numeric_dtype
 import pandas as pd
+import logging
+logging.basicConfig(level=logging.INFO)
 # requires setup.sh to run
 source_root = os.environ["SOURCE_ROOT"]
 output_path = source_root + '/output'
@@ -26,6 +28,7 @@ def show_plot(savefig=False, title='Title'):
     if not os.path.isdir(output_path):
       os.makedirs(output_path)
     plt.savefig(output_path + '/' + title + '.png')
+    logging.info('Image saved in SourceClassifier/output.')
   else:
     plt.show()
 
@@ -73,9 +76,13 @@ class Fermi_Dataset:
   def clean_classes(self):
     """
     Removes extra spaces and lowers all the characters in the CLASS1 column of the dataframe.
+    The empty rows are replaced with _unidentified_.
     This operation is useful for plots, when we don't need to distinguish between associated and identified sources(in CAPS).
     """
     self._df = self._df.assign(CLASS1=self._df['CLASS1'].apply(lambda x: x.strip().lower()))
+    self._df['CLASS1'] = self._df['CLASS1'].replace('', 'unidentified')
+    logging.info('Classes cleaned.')
+    
     return Fermi_Dataset(self._df)
 
 
@@ -87,6 +94,8 @@ class Fermi_Dataset:
     """
     try:
       self._df = self._df.dropna(subset=[col])
+      logging.info('Cleaned NaN rows.')
+      print(self._df[col].sample(n=10))
       return Fermi_Dataset(self._df)
     except KeyError as e:
       print('Oops! Seems like you got the column name {} wrong. To see column names, try print(Obj.df.columns)'.format(e))
@@ -111,6 +120,7 @@ class Fermi_Dataset:
     :param kwargs:  the same parameters of the plt.hist function (str)
     """
     assert colname in self._df.columns, 'Column name not valid. To see column names, try print(Obj.df.columns) .' 
+    logging.info('Preparing the histogram...')
     plt.figure()
     plt.hist(self.df[colname], **kwargs)
     plt.title(title)
@@ -122,6 +132,7 @@ class Fermi_Dataset:
     if ylog:
       plt.yscale('log')
 
+    logging.info('Plot ready to be shown or saved!')
     show_plot(savefig=savefig, title=title)
 
 
@@ -135,14 +146,17 @@ class Fermi_Dataset:
     """
     y_pos = np.arange(3)
     objects= ('PowerLaw', 'LogParabola', 'PLSuperExpCutoff')
+    logging.info('Counting the spectral models...')
     occurences = self.df['SpectrumType'].value_counts()
     
+    logging.info('Preparing the chart plot...')
     plt.figure()
     plt.bar(y_pos, occurences, align='center', **kwargs)
     plt.xticks(y_pos, objects)
     plt.title(title)
     plt.ylabel('Number of sources')
     
+    logging.info('Plot ready to be shown or saved!')
     show_plot(savefig=savefig, title=title)
 
     
@@ -156,9 +170,11 @@ class Fermi_Dataset:
     """
     self.clean_classes()
     
+    logging.info('Preparing data for the plot...')
     data1 = self._df[['PLEC_Index', 'PLEC_Expfactor', 'CLASS1']]
     data2 = self._df[['LP_Index', 'LP_beta', 'CLASS1']]
     
+    logging.info('Preparing the plot...')
     fig, (ax1, ax2) = plt.subplots(1, 2)
     sns.scatterplot(x='PLEC_Index', y='PLEC_Expfactor', hue='CLASS1', data=data1, ax=ax1)
     sns.scatterplot(x='LP_Index', y='LP_beta', hue='CLASS1', data=data2, ax=ax2)
@@ -166,7 +182,8 @@ class Fermi_Dataset:
     ax1.legend().set_visible(False)
     ax2.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
     plt.tight_layout()
-
+    
+    logging.info('Plot ready to be shown or saved!')
     show_plot(savefig=savefig, title=title)
 
 
@@ -203,9 +220,11 @@ class Fermi_Dataset:
     :param savefig: if True, save figure in the output directory
     :param kwargs: kwargs of matplotlib.pyplot.scatter module
     """
+    logging.info('Preparing data for variability plot...')
     x = self._df['Variability_Index']
     y = self._df['Variability2_Index']
-
+    
+    logging.info('Preparing the variability plot...')
     plt.figure()
     plt.scatter(x, y, marker='+', **kwargs)
     plt.xscale('log')
@@ -213,6 +232,7 @@ class Fermi_Dataset:
     plt.xlabel('12 month')
     plt.ylabel('2 month')
 
+    logging.info('Variability plot ready to be shown or saved!')
     show_plot(savefig=savefig, title=title)
 
   def galactic_map(self, coord_type='equatorial', title='Galactic Map',
@@ -231,10 +251,11 @@ class Fermi_Dataset:
              numeric value or a string value.
 
     """
-    # Sanity check
+    logging.info('Sanity check for the map...')
     assert color in self._df.columns, 'Color not valid. To see column names, try print(Obj.df.columns) .'
     assert (coord_type == 'equatorial' or coord_type == 'galactic'), 'Use only equatorial or galactic coordinates, please!'
     
+    logging.info('Preparing data for the map...')
     self.clean_classes()
     color_label = color
 
@@ -257,6 +278,7 @@ class Fermi_Dataset:
     # build dataframe
     coord_df = pd.DataFrame({lon_label:lon, lat_label:lat, color_label:col})
 
+    logging.info('Preparing the map...')
     fig, ax = plt.subplots(1, 1)
     ax = plt.axes(projection='mollweide')
     ax.grid(b=True)
@@ -285,7 +307,7 @@ class Fermi_Dataset:
 
     ax.set_title(title)
 
-
+    logging.info('Map ready to be shown or saved!')
     show_plot(savefig=savefig, title=title)
 
 
