@@ -97,10 +97,9 @@ class Fermi_Dataset:
     try:
       self._df = self._df.dropna(subset=[col])
       logging.info('Cleaned NaN rows.')
-      print(self._df[col].sample(n=10))
       return Fermi_Dataset(self._df)
     except KeyError as e:
-      print('Oops! Seems like you got the column name {} wrong. To see column names, try print(Obj.df.columns)'.format(e))
+      print('Oops! Seems like you got the column name {} wrong. To see column names, type print(Obj.df.columns)'.format(e))
       raise
     
     
@@ -124,6 +123,7 @@ class Fermi_Dataset:
     """
     assert colname in self._df.columns, 'Column name not valid. To see column names, try print(Obj.df.columns) .' 
     logging.info('Preparing the histogram...')
+
     plt.figure()
     plt.hist(self.df[colname], **kwargs)
     plt.title(title)
@@ -135,7 +135,7 @@ class Fermi_Dataset:
     if ylog:
       plt.yscale('log')
 
-    logging.info('Plot ready to be shown or saved!')
+    logging.info('Histogram ready to be shown or saved!')
     show_plot(savefig=savefig, title=title)
 
 
@@ -159,7 +159,7 @@ class Fermi_Dataset:
     plt.title(title)
     plt.ylabel('Number of sources')
     
-    logging.info('Plot ready to be shown or saved!')
+    logging.info('Distribution of models ready to be shown or saved!')
     show_plot(savefig=savefig, title=title)
 
     
@@ -186,7 +186,7 @@ class Fermi_Dataset:
     ax2.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
     plt.tight_layout()
 
-    logging.info('Plot ready to be shown or saved!')
+    logging.info('Spectral parameters plot ready to be shown or saved!')
     show_plot(savefig=savefig, title=title)
 
 
@@ -260,7 +260,7 @@ class Fermi_Dataset:
 
     """
     logging.info('Sanity check for the map...')
-    assert color in self._df.columns, 'Color not valid. To see column names, try print(Obj.df.columns) .'
+    assert color in self._df.columns, 'Color not valid. To see column names, type print(Obj.df.columns) .'
     assert (coord_type == 'equatorial' or coord_type == 'galactic'), 'Use only equatorial or galactic coordinates, please!'
 
     logging.info('Preparing data for the map...')
