@@ -8,8 +8,11 @@ import seaborn as sns
 import numpy as np
 from pandas.api.types import is_numeric_dtype, is_string_dtype
 import pandas as pd
+from sklearn.tree import DecisionTreeClassifier 
+from sklearn.model_selection import train_test_split 
+from sklearn import metrics
+from collections import Counter
 import warnings
-
 import logging
 logging.basicConfig(level=logging.INFO)
 # requires setup.sh to run
@@ -78,7 +81,7 @@ class Fermi_Dataset:
   def clean_column(self, col):
     """
     Removes extra spaces and lowers all the characters in the CLASS1 column of the dataframe.
-    The empty rows are replaced with _unidentified_.
+    The empty rows are replaced with _unassociated_.
     This operation is useful for plots, when we don't need to distinguish between associated and identified sources(in CAPS).
     """
     if is_string_dtype(self.df[col]):
@@ -320,6 +323,45 @@ class Fermi_Dataset:
     show_plot(savefig=savefig, title=title)
 
 
+  def classifier(self):
+    """
+    Generates a Decision Tree with the purpose to classify the unassociated sources of the catalog. 
+    The categories of the sources are in the CLASS1 column. First, we map each category to a integer.
+    Then, we divide the columns in feature (independent) variables and target (dependent) variables.
+    The target is simply the CLASS column. The features are the rest of the columns (except the ones containing strings).
+    Since the Decision Tree cannot operate with NaN values, we filled them all with the mean value of the column
+    to which that value belongs.
+    The data that generates the Decision Tree is made up of all the sources except the unassociated ones. 
+    The accuracy of the tree is calculated splitting the data into the training set and validation set.
+    """
+    self.clean_classes()
+    self._df['CLASS1'] = self._df['CLASS1'].map({'agn': 0,'bcu': 1,'bin': 2,'bll': 3,'css': 4,
+               'fsrq': 5, 'gal': 6,'glc': 7,'hmb': 8,'lmb': 9,'nlsy1': 10,
+               'nov': 11,'psr': 12,'pwn': 13,'rdg': 14,'sbg': 15,'sey': 16,
+               'sfr': 17,'snr': 18,'spp': 19, 'ssrq': 20, 'unassociated': 21, 'unk': 22})
+    
+    y = self._df['CLASS1'][self._df['CLASS1'] != 21]  #Target: the source category. we exclude the unassociated sources,
+                                                      #because we will predict them based on the decision tree
+
+    X = self._df[self._df['CLASS1'] != 21].select_dtypes(exclude='object') #Features
+    X = X.fillna(X.mean())  #replace missing data with the mean of the column
+
+    X_unassociated = self._df[self._df['CLASS1'] == 21].select_dtypes(exclude='object')
+    X_unassociated = X_unassociated.fillna(X.mean())
+    
+    #Split dataset in train set and test set
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1) # 70% training and 30% test
+    
+    clf = DecisionTreeClassifier()   # Create Decision Tree classifer 
+    clf = clf.fit(X_train,y_train)
+    
+    y_pred = clf.predict(X_test)    #Predict the response for test dataset
+    print("Accuracy:",metrics.accuracy_score(y_test, y_pred))     # Model Accuracy
+    
+    y_pred_unass = clf.predict(X_unassociated)    #Predict unassociated sources
+    counter = Counter(y_pred_unass)
+    print(counter)
+
 if __name__ == '__main__':
   # import fits file
   data_path = os.environ["SOURCE_ROOT"] + '/data/gll_psc_v21.fit'
@@ -349,6 +391,9 @@ if __name__ == '__main__':
 
   print(extended_4FGL.df.columns)
   
+  
+  data_4FGL.classifier()
+
   # prove
   # data_4FGL.filtering(data_4FGL.df['CLASS1'].str.match('(psr)|(PSR)'))
 
