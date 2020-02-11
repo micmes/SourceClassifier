@@ -6,7 +6,7 @@ import astropy.units as u
 from matplotlib import pyplot as plt
 import seaborn as sns
 import numpy as np
-from pandas.api.types import is_numeric_dtype
+from pandas.api.types import is_numeric_dtype, is_string_dtype
 import pandas as pd
 import warnings
 
@@ -74,17 +74,19 @@ class Fermi_Dataset:
       print('Oops! Give me a valid condition', e)    
       raise
 
-  
+
   def clean_column(self, col):
     """
     Removes extra spaces and lowers all the characters in the CLASS1 column of the dataframe.
     The empty rows are replaced with _unidentified_.
     This operation is useful for plots, when we don't need to distinguish between associated and identified sources(in CAPS).
     """
-    self.df[col] = self.df[col].apply(lambda x: x.strip().lower())
-    self._df[col] = self._df[col].replace('', 'unidentified')
-    logging.info('Column cleaned.')
-
+    if is_string_dtype(self.df[col]):
+      self.df[col] = self.df[col].apply(lambda x: x.strip().lower())
+      self.df[col] = self.df[col].replace('', 'unidentified')
+      logging.info('Column cleaned successfully.')
+    else:
+      logging.info('Column is numeric type: no cleaning required. Proceeding')
     return Fermi_Dataset(self._df)
 
 
@@ -264,8 +266,10 @@ class Fermi_Dataset:
     assert (coord_type == 'equatorial' or coord_type == 'galactic'), 'Use only equatorial or galactic coordinates, please!'
 
     logging.info('Preparing data for the map...')
-    self.clean_column('CLASS1')
     color_label = color
+
+    # clean color column
+    temp_df = self.clean_column(color_label).df
 
     if coord_type == 'equatorial':
       lon_label = 'RAJ2000'
@@ -274,9 +278,9 @@ class Fermi_Dataset:
       lon_label = 'GLON'
       lat_label = 'GLAT'
     
-    lon = self._df[lon_label]
-    lat = self._df[lat_label]
-    col = self._df[color_label]
+    lon = temp_df[lon_label]
+    lat = temp_df[lat_label]
+    col = temp_df[color_label]
 
     # convert deg values to RA
     lon = coord.Angle(lon * u.degree)
@@ -361,4 +365,4 @@ if __name__ == '__main__':
   data_4FGL.filtering(c == 'pwn').source_hist('GLAT', savefig=True, title='LOCH_GLAT_pwn', xlabel='GLAT',
                                               ylabel='Counts', bins=40, range=(-90,90))
   # notice that here we're investigating another fits extension
-  # extended_4FGL.galactic_map('galactic', title='LOCM_extension', savefig=True, color='Model_SemiMajor', marker='.', s=70)
+  extended_4FGL.galactic_map('galactic', title='LOCM_extension', savefig=True, color='Model_SemiMajor', marker='.', s=70)
