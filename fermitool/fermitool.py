@@ -119,7 +119,8 @@ class Fermi_Dataset:
     :param savefig:  choose whether to save the fig or not
     :param xlog: if True, set xscale to log
     :param ylog: if True, set yscale to log
-    :param kwargs:  the same parameters of the plt.hist function (str)
+    :param kwargs:  other parameters are passed to matplotlib.pyplot.hist
+    module (str)
     """
     assert colname in self._df.columns, 'Column name not valid. To see column names, try print(Obj.df.columns) .' 
     logging.info('Preparing the histogram...')
@@ -261,7 +262,7 @@ class Fermi_Dataset:
     logging.info('Sanity check for the map...')
     assert color in self._df.columns, 'Color not valid. To see column names, try print(Obj.df.columns) .'
     assert (coord_type == 'equatorial' or coord_type == 'galactic'), 'Use only equatorial or galactic coordinates, please!'
-    
+
     logging.info('Preparing data for the map...')
     self.clean_classes()
     color_label = color
@@ -321,29 +322,43 @@ if __name__ == '__main__':
 
   try:  # does the file exist? If yes
     with fits.open(data_path) as hdul:
-      fits_data = hdul[1].data
+      main_fits = hdul[1].data
+      extended_source_fits = hdul[2].data
   except OSError as e:
     print(e)
 
-  t_astropy = Table(fits_data)
+  t_astropy = Table(main_fits)
+  te_astropy = Table(extended_source_fits)
 
   col1D = [col1D for col1D in t_astropy.colnames if len(t_astropy[col1D].shape) <= 1]
   data = t_astropy[col1D].to_pandas()
-
-  # define an istance
   data_4FGL = Fermi_Dataset(data)
+
+  col1D = [col1D for col1D in te_astropy.colnames if len(te_astropy[col1D].shape) <= 1]
+  data = te_astropy[col1D].to_pandas()
+  extended_4FGL = Fermi_Dataset(data)
+
+  # print some features
   print(data_4FGL.df.columns)
   print(data_4FGL.df['GLON'])
   print(data_4FGL.df['GLAT'])
-  
+
+  print(extended_4FGL.df.columns)
   
   # prove
   # data_4FGL.filtering(data_4FGL.df['CLASS1'].str.match('(psr)|(PSR)'))
 
   # LOCALIZATION GRAPHS
-  # all sources:
-  data_4FGL.galactic_map(coord_type='galactic', title='All_sources',
-               color='CLASS1', savefig=True)
+  # LOCM stands for galactic map localization plots; LOCH is referred to
+  # histograms
+  data_4FGL.galactic_map(coord_type='galactic', title='LOCM_all_sources', savefig=True,
+               color='CLASS1', marker='.', s=50)
   c = data_4FGL._df['CLASS1']
-  data_4FGL.filtering((c == 'psr') | (c == 'pwn')).galactic_map('galactic', title='LOC_psr', savefig=True,
-                                                                color='CLASS1', alpha=.7, marker='.', s=100)
+  data_4FGL.filtering((c == 'psr') | (c == 'pwn')).galactic_map('galactic', title='LOCM_psr_pwn', savefig=True,
+                                                                color='CLASS1', marker='.', s=50)
+  data_4FGL.filtering(c == 'psr').source_hist('GLAT', savefig=True, title='LOCH_GLAT_psr', xlabel='GLAT', ylabel='Counts',
+                                              bins=40, range=(-90,90))
+  data_4FGL.filtering(c == 'pwn').source_hist('GLAT', savefig=True, title='LOCH_GLAT_pwn', xlabel='GLAT',
+                                              ylabel='Counts', bins=40, range=(-90,90))
+  # notice that here we're investigating another fits extension
+  # extended_4FGL.galactic_map('galactic', title='LOCM_extension', savefig=True, color='Model_SemiMajor', marker='.', s=70)
