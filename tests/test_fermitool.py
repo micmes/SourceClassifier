@@ -41,14 +41,14 @@ class testFermiTool(unittest.TestCase):
 		"""
 		Test the clean classes function.
 		"""
-		cleaned_dataset = TEST_DF.clean_nan('CLASS1').clean_classes()
+		cleaned_dataset = TEST_DF.remove_nan_rows('CLASS1').clean_column('CLASS1')
 		self.assertTrue(cleaned_dataset.df['CLASS1'].str.islower().all(), 'classes are not all lowercase')
 
 	def test_cleanNaN(self):
 		"""
 		Test the clean_nan function.
 		"""
-		cleanedNaN_dataset = TEST_DF.clean_nan('Signif_Avg')
+		cleanedNaN_dataset = TEST_DF.remove_nan_rows('Signif_Avg')
 		self.assertFalse(cleanedNaN_dataset.df['Signif_Avg'].isnull().values.any())
 
 	def test_filtering(self):

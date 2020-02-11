@@ -75,20 +75,20 @@ class Fermi_Dataset:
       raise
 
   
-  def clean_classes(self):
+  def clean_column(self, col):
     """
     Removes extra spaces and lowers all the characters in the CLASS1 column of the dataframe.
     The empty rows are replaced with _unidentified_.
     This operation is useful for plots, when we don't need to distinguish between associated and identified sources(in CAPS).
     """
-    self._df = self._df.assign(CLASS1=self._df['CLASS1'].apply(lambda x: x.strip().lower()))
-    self._df['CLASS1'] = self._df['CLASS1'].replace('', 'unidentified')
-    logging.info('Classes cleaned.')
+    self.df[col] = self.df[col].apply(lambda x: x.strip().lower())
+    self._df[col] = self._df[col].replace('', 'unidentified')
+    logging.info('Column cleaned.')
 
     return Fermi_Dataset(self._df)
 
 
-  def clean_nan(self, col):
+  def remove_nan_rows(self, col):
     """
     Given the column name, remove the rows of the dataframe where the values of that column are NaN.
 
@@ -171,7 +171,7 @@ class Fermi_Dataset:
     :param savefig:  choose whether to save the fig or not (in the output folder)
     :param kwargs:  set the points parameters according to 'matplotlib.pyplot.scatter' module
     """
-    self.clean_classes()
+    self.clean_column('CLASS1')
     
     logging.info('Preparing data for the plot...')
     data1 = self._df[['PLEC_Index', 'PLEC_Expfactor', 'CLASS1']]
@@ -208,7 +208,7 @@ class Fermi_Dataset:
     :param savefig: if True, save figure in the output directory
     :param kwargs: kwargs of matplotlib.pyplot.hist module
     """
-    self.clean_nan('Variability_Index')
+    self.remove_nan_rows('Variability_Index')
     
     self.source_hist(colname='Variability_Index', title=title, xlabel='Variability Index',
                       ylabel='Number of sources', savefig=savefig, xlog=True, ylog=True,
@@ -264,7 +264,7 @@ class Fermi_Dataset:
     assert (coord_type == 'equatorial' or coord_type == 'galactic'), 'Use only equatorial or galactic coordinates, please!'
 
     logging.info('Preparing data for the map...')
-    self.clean_classes()
+    self.clean_column('CLASS1')
     color_label = color
 
     if coord_type == 'equatorial':
