@@ -4,7 +4,7 @@ fermitool package
 Module contents
 ---------------
 
-.. automodule:: fermitool
+.. automodule:: fermitool.fermitool
     :members:
     :undoc-members:
     :show-inheritance:
