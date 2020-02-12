@@ -251,18 +251,19 @@ class Fermi_Dataset:
     'DEJ2000' respectively, or 'GLAT' and 'GLON' in case galactic
     coordinates are requested.
 
-    :param coord_type:  type of the given coordinates. String values are admitted:
-    'equatorial' (default) or 'galactic'.
-    :param title: the title of the histogram shown in the plot (string type)
-    :param savefig:  choose whether to save the fig or not (in the output directory)
-    :param color:  the name of the column to color the points. If string
-    value, the axes will be drawn with 'seaborn.scatterplot' module,
-    while if the column is numeric type 'matplotlib.pyplot.scatter' will
-    take its place. (NOT totally working yet!)
-    :param **kwargs: other parameters passed directly to
-    'seaborn.scatterplot' or 'matplotlib.pyplot.scatter' depending on the
-    case (see color parameter).
 
+    :param coord_type:  type of the given coordinates. String values are admitted:
+                        'equatorial' (default) or 'galactic'.
+
+    :param title: the title of the histogram shown in the plot (string type)
+    :param savefig: choose whether to save the fig or not (in the output directory)
+    :param color: the name of the column to color the points. If string
+                  value, the axes will be drawn with 'seaborn.scatterplot' module,
+                  while if the column is numeric type 'matplotlib.pyplot.scatter' will
+                  take its place. (NOT totally working yet!)
+    :param **kwargs: other parameters passed directly to
+                    'seaborn.scatterplot' or 'matplotlib.pyplot.scatter' depending on the
+                    case (see color parameter).
     """
     logging.info('Sanity check for the map...')
     assert color in self._df.columns, 'Color not valid. To see column names, type print(Obj.df.columns) .'

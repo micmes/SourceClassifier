@@ -10,7 +10,7 @@ Welcome to fermitool's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   fermitool/fermitool
+   fermitool
 
 
 
