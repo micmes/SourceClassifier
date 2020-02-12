@@ -334,7 +334,7 @@ class Fermi_Dataset:
     The data that generates the Decision Tree is made up of all the sources except the unassociated ones. 
     The accuracy of the tree is calculated splitting the data into the training set and validation set.
     """
-    self.clean_classes()
+    self.clean_column('CLASS1')
     self._df['CLASS1'] = self._df['CLASS1'].map({'agn': 0,'bcu': 1,'bin': 2,'bll': 3,'css': 4,
                'fsrq': 5, 'gal': 6,'glc': 7,'hmb': 8,'lmb': 9,'nlsy1': 10,
                'nov': 11,'psr': 12,'pwn': 13,'rdg': 14,'sbg': 15,'sey': 16,
