@@ -342,7 +342,8 @@ class Fermi_Dataset:
     
     #Remove categories that aren't very populated to make a better algorithm
     df_filtered = self._df.query('CLASS1 != 4 & CLASS1 != 6 & CLASS1 != 17 & CLASS1 != 20 & CLASS1 != 9 & CLASS1 != 2  & CLASS1 != 16 & CLASS1 != 11')
-    
+    logging.info('Underpopulated classes removed.')
+
     y = df_filtered['CLASS1'][df_filtered['CLASS1'] != 21]   #Target: the source category. we exclude the unassociated sources,
                                                              #because we will predict them based on the decision tree
     X = df_filtered[df_filtered['CLASS1'] != 21].select_dtypes(exclude='object')    #Features
@@ -350,10 +351,13 @@ class Fermi_Dataset:
     
     #Split dataset in train set and test set
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.8, random_state=1) # 80% training and 20% test
-    
+    logging.info('Split the dataset in training set and test set.')
+
     # Create Decision Tree classifer 
     clf = DecisionTreeClassifier(criterion='gini', max_leaf_nodes=10, min_samples_leaf=5, max_depth=5)   #Limit depth (aka prune tree) to avoid overfitting
     clf = clf.fit(X_train, y_train)
+    logging.info('Generated the Decision Tree Classifier.')
+
     #Generate learning curves (see tutorial https://www.dataquest.io/blog/learning-curves-machine-learning/)
     train_sizes, train_scores, validation_scores = learning_curve(estimator = clf,
                                                                   X = X,
@@ -368,6 +372,7 @@ class Fermi_Dataset:
     print("Accuracy:",metrics.accuracy_score(y_test, y_pred))     # Model Accuracy
 
     # Plot Learning curves
+    logging.info('Started plotting the learning curves...')
     plt.style.use('seaborn')
     plt.plot(train_sizes, train_scores_mean, label = 'Training error')
     plt.plot(train_sizes, validation_scores_mean, label = 'Validation error')
@@ -376,7 +381,8 @@ class Fermi_Dataset:
     plt.title('Learning curves', fontsize = 18, y = 1.03)
     plt.legend()
     plt.savefig(output_path + '/' + 'Learning curves' + '.png')
-
+    logging.info('See output folder for the learning curves!')
+    
     if predict_unassociated:
       X_unassociated = self._df[self._df['CLASS1'] == 21].select_dtypes(exclude='object')
       X_unassociated = X_unassociated.fillna(X.mean())
