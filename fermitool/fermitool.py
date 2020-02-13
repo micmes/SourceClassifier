@@ -325,10 +325,10 @@ class Fermi_Dataset:
     The target is simply the CLASS1 column. The features are the rest of the columns (except the ones containing strings).
     Since the Decision Tree cannot operate with NaN values, we filled them all with the mean value of the column
     to which that value belongs.
+    
     The data that generates the Decision Tree is made up of all the sources except the unassociated ones. 
     Decision Trees tend to overfit so we reduced its size and complexity (pruning). Plus, we removed all
     the categories populated by less than 5 sources so to improve the algorithm.
-    The accuracy of the tree is calculated splitting the data into the training set and validation set.
 
     :param predict_unassociated: if True, predicts the category of the unassociated sources
     """
@@ -349,27 +349,24 @@ class Fermi_Dataset:
     X = df_filtered[df_filtered['CLASS1'] != 21].select_dtypes(exclude='object')    #Features
     X = X.fillna(X.mean())     #replace missing data with the mean of the column
     
-    #Split dataset in train set and test set
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.8, random_state=1) # 80% training and 20% test
-    logging.info('Split the dataset in training set and test set.')
-
     # Create Decision Tree classifer 
-    clf = DecisionTreeClassifier(criterion='gini', max_leaf_nodes=10, min_samples_leaf=5, max_depth=5)   #Limit depth (aka prune tree) to avoid overfitting
-    clf = clf.fit(X_train, y_train)
+    clf = DecisionTreeClassifier(criterion='gini', max_leaf_nodes=10, min_samples_leaf=5, max_depth=5)   #Limit depth (aka prune tree) to avoid overfitting 
     logging.info('Generated the Decision Tree Classifier.')
 
-    #Generate learning curves (see tutorial https://www.dataquest.io/blog/learning-curves-machine-learning/)
+    # Generate learning curves (see tutorial https://www.dataquest.io/blog/learning-curves-machine-learning/)
     train_sizes, train_scores, validation_scores = learning_curve(estimator = clf,
-                                                                  X = X,
                                                                   n_jobs = -1,
-                                                                  y = y, cv = 7, shuffle=True,
-                                                                  train_sizes = np.linspace(0.01, 1.0, 50),
+                                                                  X = X,
+                                                                  y = y, cv = 5, shuffle=True,
+                                                                  train_sizes = np.linspace(1, 1000, dtype=int),
                                                                   scoring = 'accuracy')
     train_scores_mean = train_scores.mean(axis=1)
     validation_scores_mean = validation_scores.mean(axis=1)
 
-    y_pred = clf.predict(X_test)    #Predict the response for test dataset
-    print("Accuracy:",metrics.accuracy_score(y_test, y_pred))     # Model Accuracy
+    clf = clf.fit(X, y)
+    y_pred = clf.predict(X)
+
+    print("Accuracy:", metrics.accuracy_score(y, y_pred))     # Model Accuracy
 
     # Plot Learning curves
     logging.info('Started plotting the learning curves...')
@@ -420,7 +417,7 @@ if __name__ == '__main__':
   print(extended_4FGL.df.columns)
   
   
-  data_4FGL.classifier()
+  data_4FGL.classifier(True)
 '''
   # prove
   # data_4FGL.filtering(data_4FGL.df['CLASS1'].str.match('(psr)|(PSR)'))
