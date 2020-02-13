@@ -2,7 +2,7 @@
 This program is a simple interactive tool aimed at visualizing the Fermi 4FGL data. In theory, 
 there are infinite filters, operations and plots that can be performed,
 but we decided to limit the user's freedom to modify the data for the sake of simplicity.
-There are four main categories of plots: Localization, Energy, Variability and Spectra.
+There are four main categories of plots: Localization, Variability and Spectra.
 The plots for each category are those implemented in the Fermi_Dataset class (see fermitool.py).
 The plots will be saved in the output file.
 The filtering operation consists in keeping the brightest sources of the catalog.
@@ -40,8 +40,6 @@ parser.add_argument("--variability", action="store_true",
                     help="plot the distribution of the variability index and the comparison of the 2month and 12 month variability indexes")
 parser.add_argument("--spectra", action="store_true",
                     help= "plot the distribution of the 3 models and the spectral parameters")
-parser.add_argument("--energy", action="store_true",
-                    help="plot the energy flux map")
 parser.add_argument('--localize', action='store_true',
                     help='plot the position of the sources, divided by type')
 args = parser.parse_args()
@@ -63,10 +61,6 @@ if args.variability:
 if args.spectra:
     data_4FGL.dist_models(savefig=True)
     data_4FGL.plot_spectral_param(savefig=True)
-
-#Energy plots
-if args.energy:
-    data_4FGL.energyflux_map(savefig=True)
 
 # Localization plots
 if args.localize:
