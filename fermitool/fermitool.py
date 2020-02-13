@@ -380,7 +380,7 @@ class Fermi_Dataset:
     clf = clf.fit(X, y)
     y_pred = clf.predict(X)
 
-    print("Accuracy:", metrics.accuracy_score(y, y_pred))     # Model Accuracy
+    logging.info("Accuracy: "+str(metrics.accuracy_score(y, y_pred)))     # Model Accuracy
 
     # Plot Learning curves
     logging.info('Started plotting the learning curves...')
@@ -424,11 +424,12 @@ if __name__ == '__main__':
   extended_4FGL = Fermi_Dataset(data)
 
   # print some features
+  '''
   print(data_4FGL.df.columns)
   print(data_4FGL.df['Conf_95_SemiMajor'].isnull().values.any())
   print(data_4FGL.df['GLAT'])
   print(extended_4FGL.df.columns)
-
+  '''
 
   data_4FGL.classifier()
   data_4FGL.source_hist(['Conf_95_SemiMajor','Conf_95_SemiMinor'], savefig=True, title='LOCH_error_radii', bins=50, range=(0,0.2))
