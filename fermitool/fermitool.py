@@ -9,6 +9,7 @@ import numpy as np
 from pandas.api.types import is_numeric_dtype, is_string_dtype
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier 
+from sklearn.model_selection import learning_curve
 from sklearn.model_selection import train_test_split 
 from sklearn import metrics
 from collections import Counter
@@ -84,13 +85,16 @@ class Fermi_Dataset:
     The empty rows are replaced with _unassociated_.
     This operation is useful for plots, when we don't need to distinguish between associated and identified sources(in CAPS).
     """
-    if is_string_dtype(self.df[col]):
-      self.df[col] = self.df[col].apply(lambda x: x.strip().lower())
-      self.df[col] = self.df[col].replace('', 'unidentified')
+    if is_string_dtype(self._df[col]):
+      #self._df[col] = self._df[col].apply(lambda x: x.strip().lower())
+      #self._df[col] = self._df[col].replace('', 'unidentified')
+      self._df = self._df.assign(CLASS1=self._df['CLASS1'].apply(lambda x: x.strip().lower()))
+      self._df['CLASS1'] = self._df['CLASS1'].replace('', 'unassociated')
       logging.info('Column cleaned successfully.')
     else:
       logging.info('Column is numeric type: no cleaning required. Proceeding')
     return Fermi_Dataset(self._df)
+
 
 
   def remove_nan_rows(self, col):
@@ -334,34 +338,56 @@ class Fermi_Dataset:
     to which that value belongs.
     The data that generates the Decision Tree is made up of all the sources except the unassociated ones. 
     The accuracy of the tree is calculated splitting the data into the training set and validation set.
+    
+    :param predict_unassociated: if True, predicts the category of the unassociated sources
     """
     self.clean_column('CLASS1')
+    #Integer encoding
     self._df['CLASS1'] = self._df['CLASS1'].map({'agn': 0,'bcu': 1,'bin': 2,'bll': 3,'css': 4,
                'fsrq': 5, 'gal': 6,'glc': 7,'hmb': 8,'lmb': 9,'nlsy1': 10,
                'nov': 11,'psr': 12,'pwn': 13,'rdg': 14,'sbg': 15,'sey': 16,
                'sfr': 17,'snr': 18,'spp': 19, 'ssrq': 20, 'unassociated': 21, 'unk': 22})
     
-    y = self._df['CLASS1'][self._df['CLASS1'] != 21]  #Target: the source category. we exclude the unassociated sources,
-                                                      #because we will predict them based on the decision tree
-
-    X = self._df[self._df['CLASS1'] != 21].select_dtypes(exclude='object') #Features
-    X = X.fillna(X.mean())  #replace missing data with the mean of the column
-
-    X_unassociated = self._df[self._df['CLASS1'] == 21].select_dtypes(exclude='object')
-    X_unassociated = X_unassociated.fillna(X.mean())
+    #Remove categories that aren't very populated to make a better algorithm
+    df_filtered = self._df.query('CLASS1 != 4 & CLASS1 != 6 & CLASS1 != 17 & CLASS1 != 20 & CLASS1 != 9 & CLASS1 != 2  & CLASS1 != 16 & CLASS1 != 11')
+    
+    y = df_filtered['CLASS1'][df_filtered['CLASS1'] != 21]   #Target: the source category. we exclude the unassociated sources,
+                                                             #because we will predict them based on the decision tree
+    X = df_filtered[df_filtered['CLASS1'] != 21].select_dtypes(exclude='object')    #Features
+    X = X.fillna(X.mean())     #replace missing data with the mean of the column
     
     #Split dataset in train set and test set
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1) # 70% training and 30% test
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42) # 80% training and 20% test
     
-    clf = DecisionTreeClassifier()   # Create Decision Tree classifer 
+    # Create Decision Tree classifer 
+    clf = DecisionTreeClassifier(criterion='gini',max_leaf_nodes=10, min_samples_leaf=5, max_depth=5)   #Limit depth to avoid overfitting
     clf = clf.fit(X_train,y_train)
-    
+    train_sizes, train_scores, validation_scores = learning_curve(estimator = clf,
+                                                                  X = X,
+                                                                  y = y, cv = 5, shuffle=True,
+                                                                  scoring = 'accuracy')
+    train_scores_mean = train_scores.mean(axis = 1)
+    validation_scores_mean = validation_scores.mean(axis = 1)
+
     y_pred = clf.predict(X_test)    #Predict the response for test dataset
     print("Accuracy:",metrics.accuracy_score(y_test, y_pred))     # Model Accuracy
-    
-    y_pred_unass = clf.predict(X_unassociated)    #Predict unassociated sources
-    counter = Counter(y_pred_unass)
-    print(counter)
+
+    #Learning curves
+    plt.style.use('seaborn')
+    plt.plot(train_sizes, train_scores_mean, label = 'Training error')
+    plt.plot(train_sizes, validation_scores_mean, label = 'Validation error')
+    plt.ylabel('Accuracy', fontsize = 14)
+    plt.xlabel('Training set size', fontsize = 14)
+    plt.title('Learning curves', fontsize = 18, y = 1.03)
+    plt.legend()
+    plt.savefig(output_path + '/' + 'Learning curves' + '.png')
+
+    if predict_unassociated:
+      X_unassociated = self._df[self._df['CLASS1'] == 21].select_dtypes(exclude='object')
+      X_unassociated = X_unassociated.fillna(X.mean())
+      y_pred_unass = clf.predict(X_unassociated)    
+      counter = Counter(y_pred_unass)
+      print(counter)
 
 if __name__ == '__main__':
   # import fits file
