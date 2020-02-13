@@ -8,8 +8,8 @@ import seaborn as sns
 import numpy as np
 from pandas.api.types import is_numeric_dtype, is_string_dtype
 import pandas as pd
-from sklearn.tree import DecisionTreeClassifier 
-from sklearn.model_selection import train_test_split, learning_curve 
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import train_test_split, learning_curve
 from sklearn import metrics
 from collections import Counter
 import warnings
@@ -37,6 +37,20 @@ def show_plot(savefig=False, title='Title'):
   else:
     plt.show()
 
+def geometric_mean(func):
+
+  def wrapper(self, colname, **kwargs):
+    if len(colname) == 2:
+      logging.info('2 columns detected. Evaluating geometric mean..')
+      col1, col2 = self.df[colname].values.T
+      g = np.sqrt(col1 * col2)
+      self.df['TEMP'] = g
+      func(self, 'TEMP', **kwargs)
+    else:
+      func(self, colname, **kwargs)
+    return
+  return wrapper
+
 class Fermi_Dataset:
   """
   Class capable to perform data analysis and to visualize the given dataset in a graphical fashion.
@@ -62,7 +76,7 @@ class Fermi_Dataset:
     """
     return self._df
 
-  
+
   def filtering(self, df_condition):
     """
     Selects dataframe rows based on df_condition. Returns an object with the filtered data.
@@ -74,7 +88,7 @@ class Fermi_Dataset:
     try:
       return Fermi_Dataset(self._df[df_condition])
     except Exception as e:
-      print('Oops! Give me a valid condition', e)    
+      print('Oops! Give me a valid condition', e)
       raise
 
 
@@ -109,8 +123,8 @@ class Fermi_Dataset:
     except KeyError as e:
       print('Oops! Seems like you got the column name {} wrong. To see column names, type print(Obj.df.columns)'.format(e))
       raise
-    
-    
+
+  @geometric_mean
   def source_hist(self, colname, title='Histogram', xlabel='x',
           ylabel='y', savefig=False, xlog=False, ylog=False, **kwargs):
     """
@@ -129,7 +143,7 @@ class Fermi_Dataset:
     :param kwargs:  other parameters are passed to matplotlib.pyplot.hist
     module (str)
     """
-    assert colname in self._df.columns, 'Column name not valid. To see column names, try print(Obj.df.columns) .' 
+    assert colname in self._df.columns, 'Column name not valid. To see column names, try print(Obj.df.columns) .'
     logging.info('Preparing the histogram...')
 
     plt.figure()
@@ -159,18 +173,18 @@ class Fermi_Dataset:
     objects= ('PowerLaw', 'LogParabola', 'PLSuperExpCutoff')
     logging.info('Counting the spectral models...')
     occurences = self.df['SpectrumType'].value_counts()
-    
+
     logging.info('Preparing the chart plot...')
     plt.figure()
     plt.bar(y_pos, occurences, align='center', **kwargs)
     plt.xticks(y_pos, objects)
     plt.title(title)
     plt.ylabel('Number of sources')
-    
+
     logging.info('Distribution of models ready to be shown or saved!')
     show_plot(savefig=savefig, title=title)
 
-    
+
   def plot_spectral_param(self, title='Spectral Parameters', savefig=False, **kwargs):
     """
     Plot the spectral parameters of the sources.
@@ -180,11 +194,11 @@ class Fermi_Dataset:
     :param kwargs:  set the points parameters according to 'matplotlib.pyplot.scatter' module
     """
     self.clean_column('CLASS1')
-    
+
     logging.info('Preparing data for the plot...')
     data1 = self._df[['PLEC_Index', 'PLEC_Expfactor', 'CLASS1']]
     data2 = self._df[['LP_Index', 'LP_beta', 'CLASS1']]
-    
+
     logging.info('Preparing the plot...')
     fig, (ax1, ax2) = plt.subplots(1, 2)
     sns.scatterplot(x='PLEC_Index', y='PLEC_Expfactor', hue='CLASS1', data=data1, ax=ax1)
@@ -197,7 +211,7 @@ class Fermi_Dataset:
     logging.info('Spectral parameters plot ready to be shown or saved!')
     show_plot(savefig=savefig, title=title)
 
-  
+
   def dist_variability(self, title='Distribution of the variability index', savefig=False, **kwargs):
     """
     Plot the distribution of the variability index for the sources.
@@ -207,11 +221,11 @@ class Fermi_Dataset:
     :param kwargs: kwargs of matplotlib.pyplot.hist module
     """
     self.remove_nan_rows('Variability_Index')
-    
+
     self.source_hist(colname='Variability_Index', title=title, xlabel='Variability Index',
                       ylabel='Number of sources', savefig=savefig, xlog=True, ylog=True,
                       range=(0,500), bins=200, histtype='step')
-    
+
   def compare_variability(self, title='Comparison of Varibility index for 2 month intervals and that for 12 months',
                           savefig=False, **kwargs):
     """
@@ -274,7 +288,7 @@ class Fermi_Dataset:
     if coord_type == 'galactic':
       lon_label = 'GLON'
       lat_label = 'GLAT'
-    
+
     lon = temp_df[lon_label]
     lat = temp_df[lat_label]
     col = temp_df[color_label]
@@ -339,7 +353,7 @@ class Fermi_Dataset:
                'fsrq': 5, 'gal': 6,'glc': 7,'hmb': 8,'lmb': 9,'nlsy1': 10,
                'nov': 11,'psr': 12,'pwn': 13,'rdg': 14,'sbg': 15,'sey': 16,
                'sfr': 17,'snr': 18,'spp': 19, 'ssrq': 20, 'unassociated': 21, 'unk': 22})
-    
+
     #Remove categories that aren't very populated to make a better algorithm
     df_filtered = self._df.query('CLASS1 != 4 & CLASS1 != 6 & CLASS1 != 17 & CLASS1 != 20 & CLASS1 != 9 & CLASS1 != 2  & CLASS1 != 16 & CLASS1 != 11')
     logging.info('Underpopulated classes removed.')
@@ -348,12 +362,12 @@ class Fermi_Dataset:
                                                              #because we will predict them based on the decision tree
     X = df_filtered[df_filtered['CLASS1'] != 21].select_dtypes(exclude='object')    #Features
     X = X.fillna(X.mean())     #replace missing data with the mean of the column
-    
+
     #Split dataset in train set and test set
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.8, random_state=1) # 80% training and 20% test
     logging.info('Split the dataset in training set and test set.')
 
-    # Create Decision Tree classifer 
+    # Create Decision Tree classifer
     clf = DecisionTreeClassifier(criterion='gini', max_leaf_nodes=10, min_samples_leaf=5, max_depth=5)   #Limit depth (aka prune tree) to avoid overfitting
     clf = clf.fit(X_train, y_train)
     logging.info('Generated the Decision Tree Classifier.')
@@ -382,11 +396,11 @@ class Fermi_Dataset:
     plt.legend()
     plt.savefig(output_path + '/' + 'Learning curves' + '.png')
     logging.info('See output folder for the learning curves!')
-    
+
     if predict_unassociated:
       X_unassociated = self._df[self._df['CLASS1'] == 21].select_dtypes(exclude='object')
       X_unassociated = X_unassociated.fillna(X.mean())
-      y_pred_unass = clf.predict(X_unassociated)    
+      y_pred_unass = clf.predict(X_unassociated)
       counter = Counter(y_pred_unass)
       print(counter)
 
@@ -414,13 +428,13 @@ if __name__ == '__main__':
 
   # print some features
   print(data_4FGL.df.columns)
-  print(data_4FGL.df['GLON'])
+  print(data_4FGL.df['Conf_95_SemiMajor'].isnull().values.any())
   print(data_4FGL.df['GLAT'])
-
   print(extended_4FGL.df.columns)
-  
-  
-  data_4FGL.classifier()
+
+
+  #data_4FGL.classifier()
+  data_4FGL.source_hist(['Conf_95_SemiMajor','Conf_95_SemiMinor'], savefig=True, title='LOCH_error_radii', bins=50, range=(0,0.2))
 '''
   # prove
   # data_4FGL.filtering(data_4FGL.df['CLASS1'].str.match('(psr)|(PSR)'))
