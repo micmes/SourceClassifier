@@ -198,16 +198,6 @@ class Fermi_Dataset:
     logging.info('Spectral parameters plot ready to be shown or saved!')
     show_plot(savefig=savefig, title=title)
 
-
-  def energyflux_map(self, title='Energy Flux map', savefig=False, **kwargs):
-    """
-    Plot the galactic map with the energy flux between 100 MeV and 100 GeV as gradient.
-
-    :param title: title of the plot
-    :param savefig: if True, save figure in the output directory
-    """
-    self.galactic_map(title=title, savefig=savefig, color='Energy_Flux100')
-
   
   def dist_variability(self, title='Distribution of the variability index', savefig=False, **kwargs):
     """
@@ -328,7 +318,7 @@ class Fermi_Dataset:
     show_plot(savefig=savefig, title=title)
 
 
-  def classifier(self):
+  def classifier(self, predict_unassociated=False):
     """
     Generates a Decision Tree with the purpose to classify the unassociated sources of the catalog. 
     The categories of the sources are in the CLASS1 column. First, we map each category to a integer.
@@ -342,6 +332,7 @@ class Fermi_Dataset:
     :param predict_unassociated: if True, predicts the category of the unassociated sources
     """
     self.clean_column('CLASS1')
+    
     #Integer encoding
     self._df['CLASS1'] = self._df['CLASS1'].map({'agn': 0,'bcu': 1,'bin': 2,'bll': 3,'css': 4,
                'fsrq': 5, 'gal': 6,'glc': 7,'hmb': 8,'lmb': 9,'nlsy1': 10,
@@ -357,22 +348,25 @@ class Fermi_Dataset:
     X = X.fillna(X.mean())     #replace missing data with the mean of the column
     
     #Split dataset in train set and test set
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42) # 80% training and 20% test
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.8, random_state=1) # 80% training and 20% test
     
     # Create Decision Tree classifer 
-    clf = DecisionTreeClassifier(criterion='gini',max_leaf_nodes=10, min_samples_leaf=5, max_depth=5)   #Limit depth to avoid overfitting
-    clf = clf.fit(X_train,y_train)
+    clf = DecisionTreeClassifier(criterion='gini', max_leaf_nodes=10, min_samples_leaf=5, max_depth=5)   #Limit depth (aka prune tree) to avoid overfitting
+    clf = clf.fit(X_train, y_train)
+    #Generate learning curves (see tutorial https://www.dataquest.io/blog/learning-curves-machine-learning/)
     train_sizes, train_scores, validation_scores = learning_curve(estimator = clf,
                                                                   X = X,
-                                                                  y = y, cv = 5, shuffle=True,
+                                                                  n_jobs = -1,
+                                                                  y = y, cv = 7, shuffle=True,
+                                                                  train_sizes = np.linspace(0.01, 1.0, 50),
                                                                   scoring = 'accuracy')
-    train_scores_mean = train_scores.mean(axis = 1)
-    validation_scores_mean = validation_scores.mean(axis = 1)
+    train_scores_mean = train_scores.mean(axis=1)
+    validation_scores_mean = validation_scores.mean(axis=1)
 
     y_pred = clf.predict(X_test)    #Predict the response for test dataset
     print("Accuracy:",metrics.accuracy_score(y_test, y_pred))     # Model Accuracy
 
-    #Learning curves
+    # Plot Learning curves
     plt.style.use('seaborn')
     plt.plot(train_sizes, train_scores_mean, label = 'Training error')
     plt.plot(train_sizes, validation_scores_mean, label = 'Validation error')
@@ -420,7 +414,7 @@ if __name__ == '__main__':
   
   
   data_4FGL.classifier()
-
+'''
   # prove
   # data_4FGL.filtering(data_4FGL.df['CLASS1'].str.match('(psr)|(PSR)'))
 
@@ -438,3 +432,4 @@ if __name__ == '__main__':
                                               ylabel='Counts', bins=40, range=(-90,90))
   # notice that here we're investigating another fits extension
   extended_4FGL.galactic_map('galactic', title='LOCM_extension', savefig=True, color='Model_SemiMajor', marker='.', s=70)
+'''
