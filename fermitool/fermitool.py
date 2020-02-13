@@ -9,8 +9,7 @@ import numpy as np
 from pandas.api.types import is_numeric_dtype, is_string_dtype
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier 
-from sklearn.model_selection import learning_curve
-from sklearn.model_selection import train_test_split 
+from sklearn.model_selection import train_test_split, learning_curve 
 from sklearn import metrics
 from collections import Counter
 import warnings
@@ -321,18 +320,20 @@ class Fermi_Dataset:
   def classifier(self, predict_unassociated=False):
     """
     Generates a Decision Tree with the purpose to classify the unassociated sources of the catalog. 
-    The categories of the sources are in the CLASS1 column. First, we map each category to a integer.
+    The categories of the sources are in the CLASS1 column. First, we map each category to a integer (integer encoding).
     Then, we divide the columns in feature (independent) variables and target (dependent) variables.
-    The target is simply the CLASS column. The features are the rest of the columns (except the ones containing strings).
+    The target is simply the CLASS1 column. The features are the rest of the columns (except the ones containing strings).
     Since the Decision Tree cannot operate with NaN values, we filled them all with the mean value of the column
     to which that value belongs.
     The data that generates the Decision Tree is made up of all the sources except the unassociated ones. 
+    Decision Trees tend to overfit so we reduced its size and complexity (pruning). Plus, we removed all
+    the categories populated by less than 5 sources so to improve the algorithm.
     The accuracy of the tree is calculated splitting the data into the training set and validation set.
-    
+
     :param predict_unassociated: if True, predicts the category of the unassociated sources
     """
     self.clean_column('CLASS1')
-    
+
     #Integer encoding
     self._df['CLASS1'] = self._df['CLASS1'].map({'agn': 0,'bcu': 1,'bin': 2,'bll': 3,'css': 4,
                'fsrq': 5, 'gal': 6,'glc': 7,'hmb': 8,'lmb': 9,'nlsy1': 10,
