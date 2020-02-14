@@ -1,6 +1,4 @@
 import os
-from astropy.io import fits
-from astropy.table import Table
 import astropy.coordinates as coord
 import astropy.units as u
 from matplotlib import pyplot as plt
@@ -51,6 +49,19 @@ def geometric_mean(func):
     return
   return wrapper
 
+def no_spaces(dfcol):
+  return dfcol.apply(lambda x: x.strip())
+
+def lower_anything(dfcol):
+  return dfcol.apply(lambda x: x.lower())
+
+def change_spaces(dfcol, sub='unassociated'):
+  return dfcol.replace('', sub)
+
+def apply(dfcol, lambdaf):
+  return dfcol.apply(lambdaf)
+
+
 class Fermi_Dataset:
   """
   Class capable to perform data analysis and to visualize the given dataset in a graphical fashion.
@@ -64,7 +75,7 @@ class Fermi_Dataset:
     """
     Constructor.
 
-    :param data:  pandas dataframe containing the data
+    :param data: pandas dataframe containing the data
     """
     self._df = data
 
@@ -86,7 +97,8 @@ class Fermi_Dataset:
                           Fermi_Dataset_Instance.df['Column_Name'] ><= value
     """
     try:
-      return Fermi_Dataset(self._df[df_condition])
+      df = self.clean_column('CLASS1').df
+      return Fermi_Dataset(df[df_condition])
     except Exception as e:
       print('Oops! Give me a valid condition', e)
       raise
@@ -133,7 +145,6 @@ class Fermi_Dataset:
     function.
 
     :param colname:  The name of the column to plot (str)
-    :param filter:  Boolean value. If true, plot data from filtered_df
     :param title:  the title of the histogram shown in the plot (str)
     :param xlabel:  x label shown in the plot (str)
     :param ylabel:  y label shown in the plot (str)
@@ -294,9 +305,9 @@ class Fermi_Dataset:
     col = temp_df[color_label]
 
     # convert deg values to RA
-    lon = coord.Angle(lon * u.degree)
-    lon = lon.wrap_at(180 * u.degree).radian
-    lat = coord.Angle(lat * u.degree).radian
+    lon = coord.Angle(lon * u.deg)
+    lon = lon.wrap_at(180 * u.deg).radian
+    lat = coord.Angle(lat * u.deg).radian
 
     # build dataframe
     coord_df = pd.DataFrame({lon_label:lon, lat_label:lat, color_label:col})
@@ -401,54 +412,3 @@ class Fermi_Dataset:
       counter = Counter(y_pred_unass)
       print(counter)
 
-if __name__ == '__main__':
-  # import fits file
-  data_path = os.environ["SOURCE_ROOT"] + '/data/gll_psc_v21.fit'
-
-  try:  # does the file exist? If yes
-    with fits.open(data_path) as hdul:
-      main_fits = hdul[1].data
-      extended_source_fits = hdul[2].data
-  except OSError as e:
-    print(e)
-
-  t_astropy = Table(main_fits)
-  te_astropy = Table(extended_source_fits)
-
-  col1D = [col1D for col1D in t_astropy.colnames if len(t_astropy[col1D].shape) <= 1]
-  data = t_astropy[col1D].to_pandas()
-  data_4FGL = Fermi_Dataset(data)
-
-  col1D = [col1D for col1D in te_astropy.colnames if len(te_astropy[col1D].shape) <= 1]
-  data = te_astropy[col1D].to_pandas()
-  extended_4FGL = Fermi_Dataset(data)
-
-  # print some features
-  '''
-  print(data_4FGL.df.columns)
-  print(data_4FGL.df['Conf_95_SemiMajor'].isnull().values.any())
-  print(data_4FGL.df['GLAT'])
-  print(extended_4FGL.df.columns)
-  '''
-
-  data_4FGL.classifier()
-  data_4FGL.source_hist(['Conf_95_SemiMajor','Conf_95_SemiMinor'], savefig=True, title='LOCH_error_radii', bins=50, range=(0,0.2))
-'''
-  # prove
-  # data_4FGL.filtering(data_4FGL.df['CLASS1'].str.match('(psr)|(PSR)'))
-
-  # LOCALIZATION GRAPHS
-  # LOCM stands for galactic map localization plots; LOCH is referred to
-  # histograms
-  data_4FGL.galactic_map(coord_type='galactic', title='LOCM_all_sources', savefig=True,
-               color='CLASS1', marker='.', s=50)
-  c = data_4FGL._df['CLASS1']
-  data_4FGL.filtering((c == 'psr') | (c == 'pwn')).galactic_map('galactic', title='LOCM_psr_pwn', savefig=True,
-                                                                color='CLASS1', marker='.', s=50)
-  data_4FGL.filtering(c == 'psr').source_hist('GLAT', savefig=True, title='LOCH_GLAT_psr', xlabel='GLAT', ylabel='Counts',
-                                              bins=40, range=(-90,90))
-  data_4FGL.filtering(c == 'pwn').source_hist('GLAT', savefig=True, title='LOCH_GLAT_pwn', xlabel='GLAT',
-                                              ylabel='Counts', bins=40, range=(-90,90))
-  # notice that here we're investigating another fits extension
-  extended_4FGL.galactic_map('galactic', title='LOCM_extension', savefig=True, color='Model_SemiMajor', marker='.', s=70)
-'''
