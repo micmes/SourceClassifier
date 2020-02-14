@@ -1,6 +1,10 @@
 import unittest
 # make sure a __init__.py file exist in the import folder
 # requires setup.sh to run
+
+from astropy.io import fits
+from astropy.table import Table
+
 from fermitool.fermitool import *
 
 # import fits file
