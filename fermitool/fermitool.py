@@ -1,18 +1,23 @@
 import os
-import astropy.coordinates as coord
-import astropy.units as u
+
+import numpy as np
 from matplotlib import pyplot as plt
 import seaborn as sns
-import numpy as np
-from pandas.api.types import is_numeric_dtype, is_string_dtype
+
+import astropy.coordinates as coord
+import astropy.units as u
 import pandas as pd
+from pandas.api.types import is_numeric_dtype, is_string_dtype
+
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split, learning_curve
 from sklearn import metrics
 from collections import Counter
+
 import warnings
 import logging
 logging.basicConfig(level=logging.INFO)
+
 # requires setup.sh to run
 source_root = os.environ["SOURCE_ROOT"]
 output_path = source_root + '/output'
@@ -35,33 +40,6 @@ def show_plot(savefig=False, title='Title'):
   else:
     plt.show()
 
-def geometric_mean(func):
-
-  def wrapper(self, colname, **kwargs):
-    if len(colname) == 2:
-      logging.info('2 columns detected. Evaluating geometric mean..')
-      col1, col2 = self.df[colname].values.T
-      g = np.sqrt(col1 * col2)
-      self.df['TEMP'] = g
-      func(self, 'TEMP', **kwargs)
-    else:
-      func(self, colname, **kwargs)
-    return
-  return wrapper
-
-def no_spaces(dfcol):
-  return dfcol.apply(lambda x: x.strip())
-
-def lower_anything(dfcol):
-  return dfcol.apply(lambda x: x.lower())
-
-def change_spaces(dfcol, sub='unassociated'):
-  return dfcol.replace('', sub)
-
-def apply(dfcol, lambdaf):
-  return dfcol.apply(lambdaf)
-
-
 class Fermi_Dataset:
   """
   Class capable to perform data analysis and to visualize the given dataset in a graphical fashion.
@@ -79,40 +57,66 @@ class Fermi_Dataset:
     """
     self._df = data
 
+  def _isnum(self, colname):
+    return self.df[colname].is_numeric_dtype()
+
+  def _isstr(self, colname):
+    return self.df[colname].is_string_dtype()
+
+  def _validcolumn(self, colname):
+    if colname in self.df.columns:
+      return True
+    else:
+      return False
+
+  def def_column(self, colnames, func, newcolname='TEMP'):
+    """
+    This method provides a tool to create a new column applying a function
+    that takes two or more columns as parameters. This is useful for example
+    in evaluating geometric mean in order to draw the error radii histogram.
+    """
+    new_df = self.df
+    new_df[newcolname] = self.df.apply(lambda row: func(row[colnames]))
+    return Fermi_Dataset(new_df)
 
   @property
   def df(self):
     """
-    DataFrame which contains the Fermi data.
+    Property prevent the user to accidentally modify the instance.
     """
     return self._df
 
 
-  def filtering(self, df_condition):
+  def filtering(self, df_condition, clean=True):
     """
     Selects dataframe rows based on df_condition. Returns an object with the filtered data.
 
     :param df_condition: The condition based on which you filter the dataframe.
-                          Make sure that the condition is written conformly to the pandas module, as follows:
-                          Fermi_Dataset_Instance.df['Column_Name'] ><= value
+    Make sure that the condition is written conformly to the pandas module, for example:
+    Fermi_Dataset_Instance.df['Column_Name'] ><= value
+    :param clean: choose whether to clean column or not. With cleaning, we mean
+    - remove blank spaces
+    - set all the uppercase to lowercase
+    - set all the empty values with
+
     """
     try:
-      df = self.clean_column('CLASS1').df
+      if clean:
+        df = self.clean_column('CLASS1').df
+      else:
+        df = self.df
       return Fermi_Dataset(df[df_condition])
     except Exception as e:
       print('Oops! Give me a valid condition', e)
       raise
 
-
-  def clean_column(self, col):
+  def clean_column(self, colname):
     """
     Removes extra spaces and lowers all the characters in the CLASS1 column of the dataframe.
     The empty rows are replaced with _unassociated_.
     This operation is useful for plots, when we don't need to distinguish between associated and identified sources(in CAPS).
     """
-    if is_string_dtype(self._df[col]):
-      #self._df[col] = self._df[col].apply(lambda x: x.strip().lower())
-      #self._df[col] = self._df[col].replace('', 'unidentified')
+    if is_string_dtype(self._df[colname]):
       self._df = self._df.assign(CLASS1=self._df['CLASS1'].apply(lambda x: x.strip().lower()))
       self._df['CLASS1'] = self._df['CLASS1'].replace('', 'unassociated')
       logging.info('Column cleaned successfully.')
@@ -136,7 +140,6 @@ class Fermi_Dataset:
       print('Oops! Seems like you got the column name {} wrong. To see column names, type print(Obj.df.columns)'.format(e))
       raise
 
-  @geometric_mean
   def source_hist(self, colname, title='Histogram', xlabel='x',
           ylabel='y', savefig=False, xlog=False, ylog=False, **kwargs):
     """
@@ -144,21 +147,27 @@ class Fermi_Dataset:
     input. Most of the features are inherited from the matplotlib hist
     function.
 
-    :param colname:  The name of the column to plot (str)
-    :param title:  the title of the histogram shown in the plot (str)
-    :param xlabel:  x label shown in the plot (str)
-    :param ylabel:  y label shown in the plot (str)
+    :param colname:  The name of the column to plot. The column must be
+    numeric.
+    :param title:  the title of the histogram shown in the plot
+    :param xlabel:  x label shown in the plot
+    :param ylabel:  y label shown in the plot
     :param savefig:  choose whether to save the fig or not
     :param xlog: if True, set xscale to log
     :param ylog: if True, set yscale to log
     :param kwargs:  other parameters are passed to matplotlib.pyplot.hist
-    module (str)
+    module
     """
-    assert colname in self._df.columns, 'Column name not valid. To see column names, try print(Obj.df.columns) .'
-    logging.info('Preparing the histogram...')
+    assert colname in self.df.columns, 'Column name does not match any column ' \
+                                       'in the dataframe. To see column names, ' \
+                                       'try print(Obj.df.columns).'
+    assert is_numeric_dtype(self.df[colname]), 'Column must be numeric type'
 
+    data = self.df[colname]
+
+    logging.info('Preparing the histogram...')
     plt.figure()
-    plt.hist(self.df[colname], **kwargs)
+    plt.hist(data, **kwargs)
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)

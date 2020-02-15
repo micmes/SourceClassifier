@@ -1,4 +1,5 @@
 import unittest
+import pytest
 # make sure a __init__.py file exist in the import folder
 # requires setup.sh to run
 
@@ -29,6 +30,7 @@ class testFermiTool(unittest.TestCase):
 		"""
 		Test the sourcehist function
 		"""
+
 		TEST_DF.source_hist('RAJ2000', title='TEST_Ra(J2000)',
 							xlabel='bins', ylabel="occurrences",
 							savefig=True)
@@ -39,7 +41,7 @@ class testFermiTool(unittest.TestCase):
 																	xlabel='bins', ylabel='occurrences',
 																	savefig=True)
 
-		TEST_DF.source_hist('SpectrumType', title='TEST_Spectralmodel_withsourcehist', savefig=True)
+		# TEST_DF.source_hist('SpectrumType', title='TEST_Spectralmodel_withsourcehist', savefig=True)
 
 	def test_cleanclasses(self):
 		"""
