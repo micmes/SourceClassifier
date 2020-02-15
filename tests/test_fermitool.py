@@ -26,6 +26,17 @@ TEST_DF = Fermi_Dataset(data)
 
 class testFermiTool(unittest.TestCase):
 
+	def test_def_column(self):
+
+		def add(a,b):
+			return a + b
+
+		dfA = TEST_DF.def_column(['RAJ2000','DEJ2000'], add, newcolname='Sum').df
+		dfB = TEST_DF.df
+		dfB['Sum_for_sure'] = dfB['RAJ2000'] + dfB['DEJ2000']
+		check = np.where(dfA['Sum'] == dfB['Sum_for_sure'], True, False)
+		self.assertTrue(all(check))
+
 	def test_sourcehist(self):
 		"""
 		Test the sourcehist function
@@ -35,7 +46,7 @@ class testFermiTool(unittest.TestCase):
 							xlabel='bins', ylabel="occurrences",
 							savefig=True)
 
-		# try filtering
+
 		TEST_DF.filtering(abs(TEST_DF.df['GLAT']) > 30).source_hist('RAJ2000',
 																	title='TEST_RA(J2000) with condition',
 																	xlabel='bins', ylabel='occurrences',

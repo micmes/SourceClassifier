@@ -37,9 +37,10 @@ if __name__ == '__main__':
   '''
 
   #data_4FGL.classifier()
-  data_4FGL.source_hist(['Conf_95_SemiMajor','Conf_95_SemiMinor'], savefig=True, title='LOCH_error_radii', bins=50, range=(0,0.2))
-  print(data_4FGL.filtering(data_4FGL.df['CLASS1'] == 'unassociated').df['CLASS1'])
+  #data_4FGL.source_hist(['Conf_95_SemiMajor','Conf_95_SemiMinor'], savefig=True, title='LOCH_error_radii', bins=50, range=(0,0.2))
+  #print(data_4FGL.filtering(data_4FGL.df['CLASS1'] == 'unassociated').df['CLASS1'])
 
+  print(data_4FGL.df.values.T[0])
 '''
   # prove
   # data_4FGL.filtering(data_4FGL.df['CLASS1'].str.match('(psr)|(PSR)'))

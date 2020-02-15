@@ -69,14 +69,14 @@ class Fermi_Dataset:
     else:
       return False
 
-  def def_column(self, colnames, func, newcolname='TEMP'):
+  def def_column(self, colnames, myfunc, newcolname='TEMP'):
     """
     This method provides a tool to create a new column applying a function
     that takes two or more columns as parameters. This is useful for example
     in evaluating geometric mean in order to draw the error radii histogram.
     """
     new_df = self.df
-    new_df[newcolname] = self.df.apply(lambda row: func(row[colnames]))
+    new_df[newcolname] = myfunc(*self.df[colnames].values.T)
     return Fermi_Dataset(new_df)
 
   @property
