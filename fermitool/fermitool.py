@@ -75,9 +75,10 @@ class Fermi_Dataset:
     that takes two or more columns as parameters. This is useful for example
     in evaluating geometric mean in order to draw the error radii histogram.
     """
-    new_df = self.df
-    new_df[newcolname] = myfunc(*self.df[colnames].values.T)
-    return Fermi_Dataset(new_df)
+    # please notice: the * inside the function arguments split the numpy matrix
+    # into a list of arrays, so that 2 or more parameters are given in input.
+    self.df[newcolname] = myfunc(*self.df[colnames].values.T)
+    return Fermi_Dataset(self.df)
 
   @property
   def df(self):
