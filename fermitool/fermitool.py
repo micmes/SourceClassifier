@@ -64,7 +64,7 @@ class Fermi_Dataset:
 	"""
     return self._df
 
-  def _isnum(self, colname):
+  '''def _isnum(self, colname):
     return self.df[colname].is_numeric_dtype()
 
   def _isstr(self, colname):
@@ -74,62 +74,91 @@ class Fermi_Dataset:
     if colname in self.df.columns:
       return True
     else:
-      return False
+      return False'''
 
   def def_column(self, colnames, myfunc, newcolname='TEMP'):
     """
     This method provides a tool to create a new column applying a function
     that takes two or more columns as parameters. This is useful for example
     in evaluating geometric mean in order to draw the error radii histogram.
+    Please notice that the original df remains unchanged. This method provides a
+    new instance of the Fermi_Dataset class.
+
+    :param colnames: the column that are given as inputs.
+    :param myfunc: the function that takes the columns as inputs. Please be
+    careful to set the number of parameters equal to the number of values given
+    as input
+    :param newcolname: the column name of the function output.
     """
     # please notice: the * inside the function arguments split the numpy matrix
     # into a list of arrays, so that 2 or more parameters are given in input.
-    self.df[newcolname] = myfunc(*self.df[colnames].values.T)
-    return Fermi_Dataset(self.df)
+    new_df = self.df
+    new_df[newcolname] = myfunc(self.df[colnames].values.T)
+    return Fermi_Dataset(new_df)
 
   def filtering(self, df_condition):
     """
-    Selects dataframe rows based on df_condition. Returns an object with the filtered data.
+    Selects dataframe rows based on df_condition. Returns a new object with the filtered data.
 
     :param df_condition: The condition based on which you filter the dataframe.
-    Make sure that the condition is written conformly to the pandas module, for example:
-    Fermi_Dataset_Instance.df['Column_Name'] ><= value
+    Make sure that the condition is written conformly to the pandas module:
+    more specifically, 'df_condition' is the same condition of pandas.DataFrame.loc,
+    so that a new instance of Fermi_Dataset is based on the new df:
+    .. code-block:: python
+
+       new_df = df.loc[df_condition]
+
+    View https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.loc.html
+    for further explanation.
     """
     try:
-      return Fermi_Dataset(self.df[df_condition])
+      # Notice that this indexing return a copy of the original df, so the
+      # original instance remains unchanged
+      new_df = self.df.loc[df_condition]
+      return Fermi_Dataset(new_df)
     except Exception as e:
       print('Oops! Give me a valid condition', e)
       raise # for pytest?
 
   def clean_column(self, colname):
     """
-    Removes extra spaces and lowers all the characters in a given column of the dataframe.
-    The empty rows are replaced with '_unassociated_'.
-    This operation is useful for plots, when we don't need to distinguish between associated and identified sources(in CAPS).
+    Removes extra spaces and with '_unassociated_'. This operation is useful for
+    lowers all the characters in a given column of the dataframe. The empty rows
+    are replaced plots, when we don't need to distinguish between associated and
+    identified sources (in CAPS).
+    Please notice that the original df remains unchanged. This method provides a
+    new instance of the Fermi_Dataset class.
     """
-    assert is_string_dtype(self.df[colname]), 'Column is not string type. Please assert that the given column is string type'
+    assert is_string_dtype(self.df[colname]), 'Column is not string type. Please assert ' \
+                                              'that the given column is string type'
 
-    self.df[colname] = self.df[colname].apply(lambda x: x.strip().lower())
-    #self.df = self.df.assign(CLASS1=self.df['CLASS1'].apply(lambda x: x.strip().lower()))
-    self.df[colname] = self.df[colname].replace('', '_unassociated_')
+    new_df = self.df
+    new_df[colname] = new_df[colname].apply(lambda x: x.strip().lower())
+    new_df[colname] = new_df[colname].replace('', '_unassociated_')
     logging.info('Column cleaned successfully.')
 
-    return Fermi_Dataset(self.df)
+    return Fermi_Dataset(new_df)
 
 
-
-  def remove_nan_rows(self, colname):
+  def remove_nan_rows(self, collist):
     """
-    Given the column name, remove the rows of the dataframe where the values of that column are NaN.
+    Given the column name, remove the rows of the dataframe where the values
+    of that column are NaN.
+    Please notice that the original df remains unchanged. This method provides a
+    new instance of the Fermi_Dataset class.
 
-    :param colname: name of the column to clean
+    :param collist: list of column to which remove the nan values.
     """
     try:
-      self._df = self.df.dropna(subset=[colname])
-      logging.info('Cleaned NaN rows.')
-      return Fermi_Dataset(self.df)
+      new_df = self.df
+      new_df = new_df.dropna(subset=collist)
+      logging.info('Cleaned NaN rows from {} columns.'.format(collist))
+
+      return Fermi_Dataset(new_df)
+
     except KeyError as e:
-      print('Oops! Seems like you got the column name {} wrong. To see column names, type print(Obj.df.columns)'.format(e))
+      print('Oops! Seems like you got the column name {} wrong. To see column names, '
+            'type print(Obj.df.columns)'.format(e))
       raise
 
   def source_hist(self, colname, title='Histogram', xlabel='x',
@@ -158,6 +187,7 @@ class Fermi_Dataset:
     data = self.df[colname]
 
     logging.info('Preparing the histogram...')
+
     plt.figure()
     plt.hist(data, **kwargs)
     plt.title(title)
@@ -172,6 +202,84 @@ class Fermi_Dataset:
     logging.info('Histogram ready to be shown or saved!')
     show_plot(savefig=savefig, title=title)
 
+  def galactic_map(self, coord_type='equatorial', title='Galactic_Map',
+                   savefig=False, color=None, **kwargs):
+    """
+	Plot a galactic map given sources. We're assuming that the right
+	ascension and the declination columns are labeled by 'RAJ2000' and
+	'DEJ2000' respectively, or 'GLAT' and 'GLON' in case galactic
+	coordinates are requested.
+
+
+	:param coord_type:  type of the given coordinates. String values are admitted:
+						'equatorial' (default) or 'galactic'.
+
+	:param title: the title of the histogram shown in the plot (string type)
+	:param savefig: choose whether to save the fig or not (in the output directory)
+	:param color: the name of the column to color the points. If string
+				  value, the axes will be drawn with 'seaborn.scatterplot' module,
+				  while if the column is numeric type 'matplotlib.pyplot.scatter' will
+				  take its place. (NOT totally working yet!)
+	:param **kwargs: other parameters passed directly to
+					'seaborn.scatterplot' or 'matplotlib.pyplot.scatter' depending on the
+					case (see color parameter).
+	"""
+    logging.info('Sanity check for the map...')
+    assert color in self.df.columns, 'Color not valid. To see column names, type print(Obj.df.columns) .'
+    assert (coord_type == 'equatorial' or coord_type == 'galactic'), 'Use only equatorial or galactic coordinates, please!'
+
+    logging.info('Preparing data for the map...')
+
+    color_label = color
+
+    if coord_type == 'equatorial':
+      lon_label = 'RAJ2000'
+      lat_label = 'DEJ2000'
+    if coord_type == 'galactic':
+      lon_label = 'GLON'
+      lat_label = 'GLAT'
+
+    lon = self.df[lon_label]
+    lat = self.df[lat_label]
+    col = self.df[color_label]
+
+    # convert deg values to RA
+    lon = coord.Angle(lon * u.deg)
+    lon = lon.wrap_at(180 * u.deg).radian
+    lat = coord.Angle(lat * u.deg).radian
+
+    # build dataframe
+    coord_df = pd.DataFrame({lon_label: lon, lat_label: lat, color_label: col})
+
+    logging.info('Preparing the map...')
+    fig, ax = plt.subplots(1, 1)
+    ax = plt.axes(projection='mollweide')
+    ax.grid(b=True)
+
+    # if values are discrete, then plot a legend
+    if color == 'CLASS1':
+      sns.scatterplot(x=lon_label, y=lat_label, hue=color_label,
+                      data=coord_df, **kwargs)
+      # ax.set_position(pos = [0.15, 0.2, 0.6, 0.6])
+      ax.legend(loc='lower center', ncol=6)
+    # else plot a colorbar
+    elif color in self.df.columns and is_numeric_dtype(self.df[color_label]):
+      scat = ax.scatter(lon, lat, c=col.tolist(), **kwargs)
+      ax.set_xlabel(lon_label)
+      ax.set_ylabel(lat_label)
+      cbar = fig.colorbar(scat)
+      cbar.set_label(color_label)
+    # else draw with no colors
+    else:
+      if color is not None:
+        # raise warning
+        warnings.warn('Not valid value for color column!')
+      ax.scatter(lon, lat, **kwargs)
+    ax.set_title(title)
+
+    logging.info('Map ready to be shown or saved!')
+    show_plot(savefig=savefig, title=title)
+
 
   def dist_models(self, title='Distribution of Spectral Models', savefig=False, **kwargs):
     """
@@ -181,6 +289,7 @@ class Fermi_Dataset:
     :param savefig: if True, save figure in output directory
     :param kwargs: kwargs of matplotlib.pyplot.bar
     """
+
     y_pos = np.arange(3)
     objects= ('PowerLaw', 'LogParabola', 'PLSuperExpCutoff')
     logging.info('Counting the spectral models...')
@@ -224,13 +333,12 @@ class Fermi_Dataset:
     show_plot(savefig=savefig, title=title)
 
 
-  def dist_variability(self, title='Distribution of the variability index', savefig=False, **kwargs):
+  def dist_variability(self, title='Distribution of the variability index', savefig=False):
     """
     Plot the distribution of the variability index for the sources.
 
     :param title: title of the plot
     :param savefig: if True, save figure in the output directory
-    :param kwargs: kwargs of matplotlib.pyplot.hist module
     """
     self.remove_nan_rows('Variability_Index')
 
@@ -260,83 +368,6 @@ class Fermi_Dataset:
     plt.ylabel('2 month')
 
     logging.info('Variability plot ready to be shown or saved!')
-    show_plot(savefig=savefig, title=title)
-
-  def galactic_map(self, coord_type='equatorial', title='Galactic_Map',
-           savefig=False, color=None, **kwargs):
-    """
-    Plot a galactic map given sources. We're assuming that the right
-    ascension and the declination columns are labeled by 'RAJ2000' and
-    'DEJ2000' respectively, or 'GLAT' and 'GLON' in case galactic
-    coordinates are requested.
-
-
-    :param coord_type:  type of the given coordinates. String values are admitted:
-                        'equatorial' (default) or 'galactic'.
-
-    :param title: the title of the histogram shown in the plot (string type)
-    :param savefig: choose whether to save the fig or not (in the output directory)
-    :param color: the name of the column to color the points. If string
-                  value, the axes will be drawn with 'seaborn.scatterplot' module,
-                  while if the column is numeric type 'matplotlib.pyplot.scatter' will
-                  take its place. (NOT totally working yet!)
-    :param **kwargs: other parameters passed directly to
-                    'seaborn.scatterplot' or 'matplotlib.pyplot.scatter' depending on the
-                    case (see color parameter).
-    """
-    logging.info('Sanity check for the map...')
-    assert color in self.df.columns, 'Color not valid. To see column names, type print(Obj.df.columns) .'
-    assert (coord_type == 'equatorial' or coord_type == 'galactic'), 'Use only equatorial or galactic coordinates, please!'
-
-    logging.info('Preparing data for the map...')
-    color_label = color
-
-    if coord_type == 'equatorial':
-      lon_label = 'RAJ2000'
-      lat_label = 'DEJ2000'
-    if coord_type == 'galactic':
-      lon_label = 'GLON'
-      lat_label = 'GLAT'
-
-    lon = self.df[lon_label]
-    lat = self.df[lat_label]
-    col = self.df[color_label]
-
-    # convert deg values to RA
-    lon = coord.Angle(lon * u.deg)
-    lon = lon.wrap_at(180 * u.deg).radian
-    lat = coord.Angle(lat * u.deg).radian
-
-    # build dataframe
-    coord_df = pd.DataFrame({lon_label:lon, lat_label:lat, color_label:col})
-
-    logging.info('Preparing the map...')
-    fig, ax = plt.subplots(1, 1)
-    ax = plt.axes(projection='mollweide')
-    ax.grid(b=True)
-
-    #if values are discrete, then plot a legend
-    if color == 'CLASS1':
-      sns.scatterplot(x=lon_label, y=lat_label, hue=color_label,
-              data=coord_df, **kwargs)
-      #ax.set_position(pos = [0.15, 0.2, 0.6, 0.6])
-      ax.legend(loc='lower center', ncol=6)
-    # else plot a colorbar
-    elif color in self.df.columns and is_numeric_dtype(self.df[color_label]):
-      scat = ax.scatter(lon, lat, c=col.tolist(), **kwargs)
-      ax.set_xlabel(lon_label)
-      ax.set_ylabel(lat_label)
-      cbar = fig.colorbar(scat)
-      cbar.set_label(color_label)
-    # else draw with no colors
-    else:
-      if color is not None:
-        # raise warning
-        warnings.warn('Not valid value for color column!')
-      ax.scatter(lon, lat, **kwargs)
-    ax.set_title(title)
-
-    logging.info('Map ready to be shown or saved!')
     show_plot(savefig=savefig, title=title)
 
 
