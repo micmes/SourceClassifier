@@ -52,13 +52,11 @@ class testFermiTool(unittest.TestCase):
 		"""
 
 		TEST_DF.source_hist('RAJ2000', title='TEST_Ra(J2000)',
-							xlabel='bins', ylabel="occurrences",
 							savefig=True)
 
 
 		TEST_DF.filtering(abs(TEST_DF.df['GLAT']) > 30).source_hist('RAJ2000',
 																	title='TEST_RA(J2000) with condition',
-																	xlabel='bins', ylabel='occurrences',
 																	savefig=True)
 
 		# TEST_DF.source_hist('SpectrumType', title='TEST_Spectralmodel_withsourcehist', savefig=True)

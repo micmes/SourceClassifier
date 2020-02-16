@@ -161,8 +161,7 @@ class Fermi_Dataset:
             'type print(Obj.df.columns)'.format(e))
       raise
 
-  def source_hist(self, colname, title='Histogram', xlabel='x',
-          ylabel='y', savefig=False, xlog=False, ylog=False, **kwargs):
+  def source_hist(self, colname, title='Histogram', savefig=False, xlog=False, ylog=False, **kwargs):
     """
     This method provides a histogram plot given a single array in
     input. Most of the features are inherited from the matplotlib hist
@@ -171,8 +170,6 @@ class Fermi_Dataset:
     :param colname:  The name of the column to plot. The column must be
     numeric.
     :param title:  the title of the histogram shown in the plot
-    :param xlabel:  x label shown in the plot
-    :param ylabel:  y label shown in the plot
     :param savefig:  choose whether to save the fig or not
     :param xlog: if True, set xscale to log
     :param ylog: if True, set yscale to log
@@ -191,8 +188,8 @@ class Fermi_Dataset:
     plt.figure()
     plt.hist(data, **kwargs)
     plt.title(title)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    plt.xlabel(colname)
+    plt.ylabel('Counts')
 
     if xlog:
       plt.xscale('log')

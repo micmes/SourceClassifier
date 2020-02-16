@@ -30,10 +30,13 @@ if __name__ == '__main__':
   extended_4FGL = Fermi_Dataset(data)
 
   # Set some plot kwargs
-  map_kwargs = {"cmap" : 'plasma',
+  map_kwargs = {"cmap" : 'hsv',
                 "savefig" : True,
                 "marker" : '.',
                 "s" : 50}
+
+  hist_kwargs = {"savefig" : True,
+                 "bins" : 40}
 
   #data_4FGL.classifier()
   #data_4FGL.source_hist(['Conf_95_SemiMajor','Conf_95_SemiMinor'], savefig=True, title='LOCH_error_radii', bins=50, range=(0,0.2))
@@ -42,18 +45,18 @@ if __name__ == '__main__':
   # LOCALIZATION GRAPHS
   # LOCM stands for galactic map localization plots; LOCH is referred to
   # histograms
-  data_4FGL.galactic_map(coord_type='galactic', title='LOCM_all_sources', savefig=True,
-               color='CLASS1', marker='.', s=50)
+  data_4FGL.galactic_map(coord_type='galactic', title='LOCM_all_sources',
+                         color='CLASS1', **map_kwargs)
   data_4FGL_cleaned = data_4FGL.clean_column('CLASS1')
   data_4FGL_psr_pwn = data_4FGL_cleaned.filtering((data_4FGL.df['CLASS1'] == 'psr') | (data_4FGL.df['CLASS1'] == 'pwn'))
-  data_4FGL_psr_pwn.galactic_map('galactic', title='LOCM_psr_pwn', savefig=True,
-                color='CLASS1', marker='.', s=50)
-  data_4FGL_cleaned.filtering(data_4FGL.df['CLASS1'] == 'psr').source_hist('GLAT', savefig=True, title='LOCH_GLAT_psr', xlabel='GLAT', ylabel='Counts',
-                                              bins=40, range=(-90,90))
-  data_4FGL_cleaned.filtering(data_4FGL.df['CLASS1'] == 'pwn').source_hist('GLAT', savefig=True, title='LOCH_GLAT_pwn', xlabel='GLAT',
-                                              ylabel='Counts', bins=40, range=(-90,90))
+  data_4FGL_psr_pwn.galactic_map('galactic', title='LOCM_psr_pwn',
+                                 color='CLASS1', **map_kwargs)
+  data_4FGL_cleaned.filtering(data_4FGL.df['CLASS1'] == 'psr').source_hist('GLAT', title='LOCH_GLAT_psr',
+                                               range=(-90,90), **hist_kwargs)
+  data_4FGL_cleaned.filtering(data_4FGL.df['CLASS1'] == 'pwn').source_hist('GLAT', title='LOCH_GLAT_pwn',
+                                               range=(-90,90), **hist_kwargs)
   # notice that here we're investigating another fits extension
-  extended_4FGL.galactic_map('galactic', title='LOCM_extension', savefig=True, color='Model_SemiMajor', marker='.', s=70)
+  extended_4FGL.galactic_map('galactic', title='LOCM_extension', color='Model_SemiMajor', **map_kwargs)
 
   # define geometric mean
   def geometric_mean(*args):
@@ -64,4 +67,4 @@ if __name__ == '__main__':
   # define new column 'geometric_mean' and then plot source_hist
   df_remove_nan = data_4FGL.remove_nan_rows(['Conf_95_SemiMajor','Conf_95_SemiMinor'])
   df_geom = df_remove_nan.def_column(['Conf_95_SemiMajor','Conf_95_SemiMinor'], geometric_mean, 'Geom_mean')
-  df_geom.source_hist('Geom_mean', savefig=True, title='LOCH_error_radii', bins=50, range=(0,0.2))
+  df_geom.source_hist('Geom_mean', title='LOCH_error_radii', range=(0,0.2), **hist_kwargs)
