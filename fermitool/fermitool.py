@@ -43,10 +43,14 @@ def show_plot(savefig=False, title='Title'):
 class Fermi_Dataset:
   """
   Class capable to perform data analysis and to visualize the given dataset in a graphical fashion.
-  The constructer takes a DataFrame as an argument. 
+  The constructor takes a DataFrame as an argument.
   The Fermi_Dataset class is targeted at the 4FGL forth source catalog: all the column names are 
   those of the 4FGL. We therefore suggest to take a look at the following link <https://arxiv.org/abs/1902.10045>
   in order to get familiar with the data.
+  In this class, some method are totally generic and allow to plot histograms and scatter plots
+  filtering data depending on user preferencies. In addition, we built some methods in order to
+  reproduce the results presented on 4FGL catalog description. We refer to methods documentation
+  for further description.
   """
 
   def __init__(self, data):
@@ -64,17 +68,6 @@ class Fermi_Dataset:
 	"""
     return self._df
 
-  '''def _isnum(self, colname):
-    return self.df[colname].is_numeric_dtype()
-
-  def _isstr(self, colname):
-    return self.df[colname].is_string_dtype()
-
-  def _validcolumn(self, colname):
-    if colname in self.df.columns:
-      return True
-    else:
-      return False'''
 
   def def_column(self, colnames, myfunc, newcolname='TEMP'):
     """
@@ -93,7 +86,7 @@ class Fermi_Dataset:
     # please notice: the * inside the function arguments split the numpy matrix
     # into a list of arrays, so that 2 or more parameters are given in input.
     new_df = self.df
-    new_df[newcolname] = myfunc(self.df[colnames].values.T)
+    new_df[newcolname] = myfunc(*self.df[colnames].values.T)
     return Fermi_Dataset(new_df)
 
   def filtering(self, df_condition):
@@ -149,6 +142,7 @@ class Fermi_Dataset:
 
     :param collist: list of column to which remove the nan values.
     """
+
     try:
       new_df = self.df
       new_df = new_df.dropna(subset=collist)
@@ -156,9 +150,10 @@ class Fermi_Dataset:
 
       return Fermi_Dataset(new_df)
 
-    except KeyError as e:
-      print('Oops! Seems like you got the column name {} wrong. To see column names, '
-            'type print(Obj.df.columns)'.format(e))
+    except Exception as e:
+      print("Oops! {} is not valid. Please notice that if a single column is given,"
+            "it should be written as an iterable (for example: ['RAJ2000'] and not "
+            "'RAJ2000'). To see column names, type print(Obj.df.columns)".format(collist))
       raise
 
   def source_hist(self, colname, title='Histogram', savefig=False, xlog=False, ylog=False, **kwargs):
@@ -284,7 +279,7 @@ class Fermi_Dataset:
 
     :param title: title of the plot
     :param savefig: if True, save figure in output directory
-    :param kwargs: kwargs of matplotlib.pyplot.bar
+    :param kwargs: other kwargs are passed directly to matplotlib.pyplot.bar
     """
 
     y_pos = np.arange(3)
@@ -329,19 +324,6 @@ class Fermi_Dataset:
     logging.info('Spectral parameters plot ready to be shown or saved!')
     show_plot(savefig=savefig, title=title)
 
-
-  def dist_variability(self, title='Distribution of the variability index', savefig=False):
-    """
-    Plot the distribution of the variability index for the sources.
-
-    :param title: title of the plot
-    :param savefig: if True, save figure in the output directory
-    """
-    self.remove_nan_rows('Variability_Index')
-
-    self.source_hist(colname='Variability_Index', title=title, xlabel='Variability Index',
-                      ylabel='Number of sources', savefig=savefig, xlog=True, ylog=True,
-                      range=(0,500), bins=200, histtype='step')
 
   def compare_variability(self, title='Comparison of Varibility index for 2 month intervals and that for 12 months',
                           savefig=False, **kwargs):

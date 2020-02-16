@@ -36,11 +36,15 @@ if __name__ == '__main__':
                 "s" : 50}
 
   hist_kwargs = {"savefig" : True,
-                 "bins" : 40}
+                 "bins" : 40,
+                 "histtype" : 'step'}
 
   #data_4FGL.classifier()
-  #data_4FGL.source_hist(['Conf_95_SemiMajor','Conf_95_SemiMinor'], savefig=True, title='LOCH_error_radii', bins=50, range=(0,0.2))
-  #print(data_4FGL.filtering(data_4FGL.df['CLASS1'] == 'unassociated').df['CLASS1'])
+
+  # VARIABILITY
+  data_nan_removed = data_4FGL.remove_nan_rows(['Variability_Index'])
+  data_nan_removed.source_hist(colname='Variability_Index', title='VAR_distribution_of_variability', savefig=True,
+                               xlog=True, ylog=True, range=(0,500), bins=200, histtype='step')
 
   # LOCALIZATION GRAPHS
   # LOCM stands for galactic map localization plots; LOCH is referred to
