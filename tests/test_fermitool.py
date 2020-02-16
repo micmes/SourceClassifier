@@ -88,16 +88,18 @@ class testFermiTool(unittest.TestCase):
 		"""
 		Test the galactic map function
 		"""
-		TEST_DF.galactic_map(title='TEST_all_data_CLASS', color='CLASS1',
+		TEST_DF_cleaned = TEST_DF.clean_column('CLASS1')
+
+		TEST_DF_cleaned.galactic_map(title='TEST_all_data_CLASS', color='CLASS1',
 							 savefig=True, palette='YlGn_r', marker='x',
 							 alpha=0.5)
 		TEST_DF.galactic_map(title='TEST_all_data_DEC', color='DEJ2000',
 							 savefig=True, cmap='YlGn', marker='x',
 							 alpha=0.1)
 
-		TEST_DF.filtering(TEST_DF.df['DEJ2000'] > 0).galactic_map(title='TEST_Only_positive_dec', color='CLASS1',
+		TEST_DF_cleaned.filtering(TEST_DF.df['DEJ2000'] > 0).galactic_map(title='TEST_Only_positive_dec', color='CLASS1',
 																  savefig=True)
-		TEST_DF.filtering(TEST_DF.df['DEJ2000'] > 0).galactic_map(coord_type='galactic', title='TEST_Only_positive_dec_but_galactic',
+		TEST_DF_cleaned.filtering(TEST_DF.df['DEJ2000'] > 0).galactic_map(coord_type='galactic', title='TEST_Only_positive_dec_but_galactic',
 																  color='CLASS1',
 																  savefig=True)
 	

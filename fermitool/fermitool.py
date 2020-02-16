@@ -96,38 +96,38 @@ class Fermi_Dataset:
     Fermi_Dataset_Instance.df['Column_Name'] ><= value
     """
     try:
-        df = self.df
       return Fermi_Dataset(self.df[df_condition])
     except Exception as e:
       print('Oops! Give me a valid condition', e)
-      raise
+      raise # for pytest?
 
   def clean_column(self, colname):
     """
-    Removes extra spaces and lowers all the characters in the CLASS1 column of the dataframe.
-    The empty rows are replaced with _unassociated_.
+    Removes extra spaces and lowers all the characters in a given column of the dataframe.
+    The empty rows are replaced with '_unassociated_'.
     This operation is useful for plots, when we don't need to distinguish between associated and identified sources(in CAPS).
     """
-    if is_string_dtype(self._df[colname]):
-      self._df = self._df.assign(CLASS1=self._df['CLASS1'].apply(lambda x: x.strip().lower()))
-      self._df['CLASS1'] = self._df['CLASS1'].replace('', 'unassociated')
-      logging.info('Column cleaned successfully.')
-    else:
-      logging.info('Column is numeric type: no cleaning required. Proceeding')
-    return Fermi_Dataset(self._df)
+    assert is_string_dtype(self.df[colname]), 'Column is not string type. Please assert that the given column is string type'
+
+    self.df[colname] = self.df[colname].apply(lambda x: x.strip().lower())
+    #self.df = self.df.assign(CLASS1=self.df['CLASS1'].apply(lambda x: x.strip().lower()))
+    self.df[colname] = self.df[colname].replace('', '_unassociated_')
+    logging.info('Column cleaned successfully.')
+
+    return Fermi_Dataset(self.df)
 
 
 
-  def remove_nan_rows(self, col):
+  def remove_nan_rows(self, colname):
     """
     Given the column name, remove the rows of the dataframe where the values of that column are NaN.
 
-    :param col: name of the column to clean
+    :param colname: name of the column to clean
     """
     try:
-      self._df = self._df.dropna(subset=[col])
+      self._df = self.df.dropna(subset=[colname])
       logging.info('Cleaned NaN rows.')
-      return Fermi_Dataset(self._df)
+      return Fermi_Dataset(self.df)
     except KeyError as e:
       print('Oops! Seems like you got the column name {} wrong. To see column names, type print(Obj.df.columns)'.format(e))
       raise
@@ -208,8 +208,8 @@ class Fermi_Dataset:
     self.clean_column('CLASS1')
 
     logging.info('Preparing data for the plot...')
-    data1 = self._df[['PLEC_Index', 'PLEC_Expfactor', 'CLASS1']]
-    data2 = self._df[['LP_Index', 'LP_beta', 'CLASS1']]
+    data1 = self.df[['PLEC_Index', 'PLEC_Expfactor', 'CLASS1']]
+    data2 = self.df[['LP_Index', 'LP_beta', 'CLASS1']]
 
     logging.info('Preparing the plot...')
     fig, (ax1, ax2) = plt.subplots(1, 2)
@@ -248,8 +248,8 @@ class Fermi_Dataset:
     :param kwargs: kwargs of matplotlib.pyplot.scatter module
     """
     logging.info('Preparing data for variability plot...')
-    x = self._df['Variability_Index']
-    y = self._df['Variability2_Index']
+    x = self.df['Variability_Index']
+    y = self.df['Variability2_Index']
 
     logging.info('Preparing the variability plot...')
     plt.figure()
@@ -285,14 +285,11 @@ class Fermi_Dataset:
                     case (see color parameter).
     """
     logging.info('Sanity check for the map...')
-    assert color in self._df.columns, 'Color not valid. To see column names, type print(Obj.df.columns) .'
+    assert color in self.df.columns, 'Color not valid. To see column names, type print(Obj.df.columns) .'
     assert (coord_type == 'equatorial' or coord_type == 'galactic'), 'Use only equatorial or galactic coordinates, please!'
 
     logging.info('Preparing data for the map...')
     color_label = color
-
-    # clean color column
-    temp_df = self.clean_column(color_label).df
 
     if coord_type == 'equatorial':
       lon_label = 'RAJ2000'
@@ -301,9 +298,9 @@ class Fermi_Dataset:
       lon_label = 'GLON'
       lat_label = 'GLAT'
 
-    lon = temp_df[lon_label]
-    lat = temp_df[lat_label]
-    col = temp_df[color_label]
+    lon = self.df[lon_label]
+    lat = self.df[lat_label]
+    col = self.df[color_label]
 
     # convert deg values to RA
     lon = coord.Angle(lon * u.deg)
@@ -325,7 +322,7 @@ class Fermi_Dataset:
       #ax.set_position(pos = [0.15, 0.2, 0.6, 0.6])
       ax.legend(loc='lower center', ncol=6)
     # else plot a colorbar
-    elif color in self._df.columns and is_numeric_dtype(self._df[color_label]):
+    elif color in self.df.columns and is_numeric_dtype(self.df[color_label]):
       scat = ax.scatter(lon, lat, c=col.tolist(), **kwargs)
       ax.set_xlabel(lon_label)
       ax.set_ylabel(lat_label)
@@ -361,13 +358,13 @@ class Fermi_Dataset:
     self.clean_column('CLASS1')
 
     #Integer encoding
-    self._df['CLASS1'] = self._df['CLASS1'].map({'agn': 0,'bcu': 1,'bin': 2,'bll': 3,'css': 4,
+    self.df['CLASS1'] = self.df['CLASS1'].map({'agn': 0, 'bcu': 1, 'bin': 2, 'bll': 3, 'css': 4,
                'fsrq': 5, 'gal': 6,'glc': 7,'hmb': 8,'lmb': 9,'nlsy1': 10,
                'nov': 11,'psr': 12,'pwn': 13,'rdg': 14,'sbg': 15,'sey': 16,
                'sfr': 17,'snr': 18,'spp': 19, 'ssrq': 20, 'unassociated': 21, 'unk': 22})
 
     #Remove categories that aren't very populated to make a better algorithm
-    df_filtered = self._df.query('CLASS1 != 4 & CLASS1 != 6 & CLASS1 != 17 & CLASS1 != 20 & CLASS1 != 9 & CLASS1 != 2  & CLASS1 != 16 & CLASS1 != 11')
+    df_filtered = self.df.query('CLASS1 != 4 & CLASS1 != 6 & CLASS1 != 17 & CLASS1 != 20 & CLASS1 != 9 & CLASS1 != 2  & CLASS1 != 16 & CLASS1 != 11')
     logging.info('Underpopulated classes removed.')
 
     y = df_filtered['CLASS1'][df_filtered['CLASS1'] != 21]   #Target: the source category. we exclude the unassociated sources,
@@ -407,7 +404,7 @@ class Fermi_Dataset:
     logging.info('See output folder for the learning curves!')
 
     if predict_unassociated:
-      X_unassociated = self._df[self._df['CLASS1'] == 21].select_dtypes(exclude='object')
+      X_unassociated = self.df[self.df['CLASS1'] == 21].select_dtypes(exclude='object')
       X_unassociated = X_unassociated.fillna(X.mean())
       y_pred_unass = clf.predict(X_unassociated)
       counter = Counter(y_pred_unass)
