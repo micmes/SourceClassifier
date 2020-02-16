@@ -57,6 +57,13 @@ class Fermi_Dataset:
     """
     self._df = data
 
+  @property
+  def df(self):
+    """
+	Property prevent the user to accidentally modify the instance.
+	"""
+    return self._df
+
   def _isnum(self, colname):
     return self.df[colname].is_numeric_dtype()
 
@@ -80,33 +87,17 @@ class Fermi_Dataset:
     self.df[newcolname] = myfunc(*self.df[colnames].values.T)
     return Fermi_Dataset(self.df)
 
-  @property
-  def df(self):
-    """
-    Property prevent the user to accidentally modify the instance.
-    """
-    return self._df
-
-
-  def filtering(self, df_condition, clean=True):
+  def filtering(self, df_condition):
     """
     Selects dataframe rows based on df_condition. Returns an object with the filtered data.
 
     :param df_condition: The condition based on which you filter the dataframe.
     Make sure that the condition is written conformly to the pandas module, for example:
     Fermi_Dataset_Instance.df['Column_Name'] ><= value
-    :param clean: choose whether to clean column or not. With cleaning, we mean
-    - remove blank spaces
-    - set all the uppercase to lowercase
-    - set all the empty values with
-
     """
     try:
-      if clean:
-        df = self.clean_column('CLASS1').df
-      else:
         df = self.df
-      return Fermi_Dataset(df[df_condition])
+      return Fermi_Dataset(self.df[df_condition])
     except Exception as e:
       print('Oops! Give me a valid condition', e)
       raise

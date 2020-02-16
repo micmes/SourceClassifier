@@ -37,6 +37,15 @@ class testFermiTool(unittest.TestCase):
 		check = np.where(dfA['Sum'] == dfB['Sum_for_sure'], True, False)
 		self.assertTrue(all(check))
 
+		def add3(a, b, c):
+			return a + b + c
+
+		dfA3 = TEST_DF.def_column(['RAJ2000', 'DEJ2000', 'GLAT'], add3, newcolname='Sum').df
+		dfB3 = TEST_DF.df
+		dfB3['Sum_for_sure'] = dfB3['RAJ2000'] + dfB3['DEJ2000'] + dfB3['GLAT']
+		check = np.where(dfA3['Sum'] == dfB3['Sum_for_sure'], True, False)
+		self.assertTrue(all(check))
+
 	def test_sourcehist(self):
 		"""
 		Test the sourcehist function
