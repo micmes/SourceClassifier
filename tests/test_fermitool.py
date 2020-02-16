@@ -1,13 +1,12 @@
 import unittest
-import pytest
 # make sure a __init__.py file exist in the import folder
-# requires setup.sh to run
 
 from astropy.io import fits
 from astropy.table import Table
 
 from fermitool.fermitool import *
 
+# requires setup.sh to run
 # import fits file
 data_path = os.environ["SOURCE_ROOT"] + '/data/gll_psc_v21.fit'
 try:  # does it exists? If yes

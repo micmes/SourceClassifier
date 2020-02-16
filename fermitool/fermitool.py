@@ -45,12 +45,12 @@ class Fermi_Dataset:
   Class capable to perform data analysis and to visualize the given dataset in a graphical fashion.
   The constructor takes a DataFrame as an argument.
   The Fermi_Dataset class is targeted at the 4FGL forth source catalog: all the column names are 
-  those of the 4FGL. We therefore suggest to take a look at the following link <https://arxiv.org/abs/1902.10045>
+  those of the 4FGL. We thereforedata. suggest to take a look at the following link <https://arxiv.org/abs/1902.10045>
   in order to get familiar with the data.
-  In this class, some method are totally generic and allow to plot histograms and scatter plots
-  filtering data depending on user preferencies. In addition, we built some methods in order to
-  reproduce the results presented on 4FGL catalog description. We refer to methods documentation
-  for further description.
+  In this class, some method are totally generic and allow to draw histograms and scatter plots,
+  filtering data depending on user preferences. In addition, we built some methods in order to
+  reproduce the results presented on 4FGL catalog description (linked above). For further details,
+  we refer to the description of the methods below.
   """
 
   def __init__(self, data):
@@ -218,7 +218,8 @@ class Fermi_Dataset:
 	"""
     logging.info('Sanity check for the map...')
     assert color in self.df.columns, 'Color not valid. To see column names, type print(Obj.df.columns) .'
-    assert (coord_type == 'equatorial' or coord_type == 'galactic'), 'Use only equatorial or galactic coordinates, please!'
+    assert (coord_type == 'equatorial' or coord_type == 'galactic'), 'Not valid value given for coord_type. Try with' \
+                                                                     '"equatorial" or "galactic".'
 
     logging.info('Preparing data for the map...')
 
