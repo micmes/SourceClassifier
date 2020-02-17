@@ -42,10 +42,9 @@ def show_plot(savefig=False, title='Title'):
 
 class Fermi_Dataset:
   """
-  Class capable to perform data analysis and to visualize the given dataset in a graphical fashion.
   The constructor takes a DataFrame as an argument.
   The Fermi_Dataset class is targeted at the 4FGL forth source catalog: all the column names are 
-  those of the 4FGL. We thereforedata. suggest to take a look at the following link <https://arxiv.org/abs/1902.10045>
+  those of the 4FGL. We therefore suggest to take a look at the following link <https://arxiv.org/abs/1902.10045>
   in order to get familiar with the data.
   In this class, some method are totally generic and allow to draw histograms and scatter plots,
   filtering data depending on user preferences. In addition, we built some methods in order to
@@ -73,7 +72,7 @@ class Fermi_Dataset:
     """
     This method provides a tool to create a new column applying a function
     that takes two or more columns as parameters. This is useful for example
-    in evaluating geometric mean in order to draw the error radii histogram.
+    in evaluating geometric mean when the user wants to draw the error radii histogram.
     Please notice that the original df remains unchanged. This method provides a
     new instance of the Fermi_Dataset class.
 
