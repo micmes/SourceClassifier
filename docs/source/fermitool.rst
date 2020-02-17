@@ -1,5 +1,5 @@
-fermitool package
-===================
+Fermitool module
+================
 
 .. automodule:: fermitool
     :members:
