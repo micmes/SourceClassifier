@@ -39,8 +39,6 @@ if __name__ == '__main__':
                  "bins" : 40,
                  "histtype" : 'step'}
 
-  #data_4FGL.classifier()
-
   # VARIABILITY
   data_nan_removed = data_4FGL.remove_nan_rows(['Variability_Index'])
   data_nan_removed.source_hist(colname='Variability_Index', title='VAR_distribution_of_variability', savefig=True,
@@ -64,7 +62,7 @@ if __name__ == '__main__':
 
   # define geometric mean
   def geometric_mean(*args):
-    n = len(*args)
+    n = len(args)
     print('Args length = {}'.format(n))
     return reduce(lambda x, y: x*y, *args) ** (1./n)
 
@@ -72,3 +70,6 @@ if __name__ == '__main__':
   df_remove_nan = data_4FGL.remove_nan_rows(['Conf_95_SemiMajor','Conf_95_SemiMinor'])
   df_geom = df_remove_nan.def_column(['Conf_95_SemiMajor','Conf_95_SemiMinor'], geometric_mean, 'Geom_mean')
   df_geom.source_hist('Geom_mean', title='LOCH_error_radii', range=(0,0.2), **hist_kwargs)
+
+  # CLASSIFICATION
+  data_4FGL.classifier()

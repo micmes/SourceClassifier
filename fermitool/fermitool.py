@@ -81,6 +81,8 @@ class Fermi_Dataset:
     careful to set the number of parameters equal to the number of values given
     as input
     :param newcolname: the column name of the function output.
+
+    :return: a new Fermi_Dataset object.
     """
     # please notice: the * inside the function arguments split the numpy matrix
     # into a list of arrays, so that 2 or more parameters are given in input.
@@ -96,12 +98,15 @@ class Fermi_Dataset:
     Make sure that the condition is written conformly to the pandas module:
     more specifically, 'df_condition' is the same condition of pandas.DataFrame.loc,
     so that a new instance of Fermi_Dataset is based on the new df:
+
     .. code-block:: python
 
        new_df = df.loc[df_condition]
 
     View https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.loc.html
     for further explanation.
+
+    :return: a new Fermi_Dataset object.
     """
     try:
       # Notice that this indexing return a copy of the original df, so the
@@ -120,13 +125,17 @@ class Fermi_Dataset:
     identified sources (in CAPS).
     Please notice that the original df remains unchanged. This method provides a
     new instance of the Fermi_Dataset class.
+
+    :param colname: the column that is given as input.
+
+    :return: a new instance of Fermi_Dataset class.
     """
     assert is_string_dtype(self.df[colname]), 'Column is not string type. Please assert ' \
                                               'that the given column is string type'
 
     new_df = self.df
     new_df[colname] = new_df[colname].apply(lambda x: x.strip().lower())
-    new_df[colname] = new_df[colname].replace('', '_unassociated_')
+    new_df[colname] = new_df[colname].replace('', 'unassociated')
     logging.info('Column cleaned successfully.')
 
     return Fermi_Dataset(new_df)
@@ -140,6 +149,8 @@ class Fermi_Dataset:
     new instance of the Fermi_Dataset class.
 
     :param collist: list of column to which remove the nan values.
+
+    :return: a new instance of Fermi_Dataset class.
     """
 
     try:
@@ -169,6 +180,7 @@ class Fermi_Dataset:
     :param ylog: if True, set yscale to log
     :param kwargs:  other parameters are passed to matplotlib.pyplot.hist
     module
+
     """
     assert colname in self.df.columns, 'Column name does not match any column ' \
                                        'in the dataframe. To see column names, ' \
@@ -210,10 +222,11 @@ class Fermi_Dataset:
 	:param color: the name of the column to color the points. If string
 				  value, the axes will be drawn with 'seaborn.scatterplot' module,
 				  while if the column is numeric type 'matplotlib.pyplot.scatter' will
-				  take its place. (NOT totally working yet!)
+				  take its place.
 	:param **kwargs: other parameters passed directly to
 					'seaborn.scatterplot' or 'matplotlib.pyplot.scatter' depending on the
 					case (see color parameter).
+
 	"""
     logging.info('Sanity check for the map...')
     assert color in self.df.columns, 'Color not valid. To see column names, type print(Obj.df.columns) .'
@@ -365,16 +378,16 @@ class Fermi_Dataset:
 
     :param predict_unassociated: if True, predicts the category of the unassociated sources
     """
-    self.clean_column('CLASS1')
+    df_clean = self.clean_column('CLASS1').df
 
     #Integer encoding
-    self.df['CLASS1'] = self.df['CLASS1'].map({'agn': 0, 'bcu': 1, 'bin': 2, 'bll': 3, 'css': 4,
+    df_clean['CLASS1'] = df_clean['CLASS1'].map({'agn': 0, 'bcu': 1, 'bin': 2, 'bll': 3, 'css': 4,
                'fsrq': 5, 'gal': 6,'glc': 7,'hmb': 8,'lmb': 9,'nlsy1': 10,
                'nov': 11,'psr': 12,'pwn': 13,'rdg': 14,'sbg': 15,'sey': 16,
                'sfr': 17,'snr': 18,'spp': 19, 'ssrq': 20, 'unassociated': 21, 'unk': 22})
 
     #Remove categories that aren't very populated to make a better algorithm
-    df_filtered = self.df.query('CLASS1 != 4 & CLASS1 != 6 & CLASS1 != 17 & CLASS1 != 20 & CLASS1 != 9 & CLASS1 != 2  & CLASS1 != 16 & CLASS1 != 11')
+    df_filtered = df_clean.query('CLASS1 != 4 & CLASS1 != 6 & CLASS1 != 17 & CLASS1 != 20 & CLASS1 != 9 & CLASS1 != 2  & CLASS1 != 16 & CLASS1 != 11')
     logging.info('Underpopulated classes removed.')
 
     y = df_filtered['CLASS1'][df_filtered['CLASS1'] != 21]   #Target: the source category. we exclude the unassociated sources,
