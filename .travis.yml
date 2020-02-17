@@ -5,8 +5,5 @@ python:
 # command to install dependencies
 install:
   - pip install -r requirements.txt
-# set environment variables
-before_script:
-  - source setup.sh
 # command to run tests
 script: pytest
