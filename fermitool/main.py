@@ -72,4 +72,4 @@ if __name__ == '__main__':
   df_geom.source_hist('Geom_mean', title='LOCH_error_radii', range=(0,0.2), **hist_kwargs)
 
   # CLASSIFICATION
-  data_4FGL.classifier()
+  data_4FGL.classifier(True)

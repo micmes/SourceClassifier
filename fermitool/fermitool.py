@@ -419,11 +419,12 @@ class Fermi_Dataset:
     plt.style.use('seaborn')
     plt.plot(train_sizes, train_scores_mean, label = 'Training error')
     plt.plot(train_sizes, validation_scores_mean, label = 'Validation error')
+    plt.ylim(0,1)
     plt.ylabel('Accuracy', fontsize = 14)
     plt.xlabel('Training set size', fontsize = 14)
-    plt.title('Learning curves', fontsize = 18, y = 1.03)
+    plt.title('Decision Tree curve', fontsize = 18, y = 1.03)
     plt.legend()
-    plt.savefig(output_path + '/' + 'Learning curves' + '.png')
+    plt.savefig(output_path + '/' + 'decisiontree' + '.png')
     logging.info('See output folder for the learning curves!')
 
     if predict_unassociated:
