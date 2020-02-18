@@ -66,7 +66,6 @@ if __name__ == '__main__':
   # define geometric mean
   def geometric_mean(*args):
     n = len(args)
-    print('Args length = {}'.format(n))
     return reduce(lambda x, y: x*y, *args) ** (1./n)
 
   # define new column 'geometric_mean' and then plot source_hist
