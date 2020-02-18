@@ -27,6 +27,21 @@ source venv/bin/activate
 in your bash first. To see some example of package at work we refer to the documentation:
 https://sourceclassifier.readthedocs.io/en/latest/?badge=latest
 
+To generate the outputs you can proceed in two different ways.
+The first one (which we recommend) consists in running
+```
+python main.py
+```
+The second way makes use of the parsing module, so it is more interactive. Run:
+```
+python argument_parser.py --argument
+```
+where the option "argument" should be replace with an appropriate option supported by the parser. Further information can be found running
+```
+python argument_parser.py --help
+```
+All outputs are saved in the outputs directory.
+
 ## Uninstall 
 Simply delete 'SourceClassifier' folder. 
 
