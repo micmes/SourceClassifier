@@ -63,8 +63,8 @@ class Fermi_Dataset:
   @property
   def df(self):
     """
-	Property prevent the user to accidentally modify the instance.
-	"""
+	  The property prevents the user to accidentally modify the instance.
+	  """
     return self._df
 
 
@@ -119,8 +119,8 @@ class Fermi_Dataset:
 
   def clean_column(self, colname):
     """
-    Removes extra spaces and with '_unassociated_'. This operation is useful for
-    lowers all the characters in a given column of the dataframe. The empty rows
+    Removes extra spaces and replaces empty values with '_unassociated_'. This operation is useful
+    for lowering all the characters in a given column of the dataframe. The empty rows
     are replaced plots, when we don't need to distinguish between associated and
     identified sources (in CAPS).
     Please notice that the original df remains unchanged. This method provides a
