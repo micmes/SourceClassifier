@@ -43,7 +43,8 @@ if __name__ == '__main__':
   data_nan_removed = data_4FGL.remove_nan_rows(['Variability_Index'])
   data_nan_removed.source_hist(colname='Variability_Index', title='VAR_distribution_of_variability', savefig=True,
                                xlog=True, ylog=True, range=(0,500), bins=200, histtype='step')
-
+  data_nan_removed.compare_variability(title='VAR_Comparison of Varibility index for 2 month intervals and that for 12 months', savefig=True)
+  
   # LOCALIZATION GRAPHS
   # LOCM stands for galactic map localization plots; LOCH is referred to
   # histograms
@@ -71,5 +72,11 @@ if __name__ == '__main__':
   df_geom = df_remove_nan.def_column(['Conf_95_SemiMajor','Conf_95_SemiMinor'], geometric_mean, 'Geom_mean')
   df_geom.source_hist('Geom_mean', title='LOCH_error_radii', range=(0,0.2), **hist_kwargs)
 
+  #SPECTRAL PLOTS
+  data_4FGL.filtering(data_4FGL.df['Signif_Avg']>30).plot_spectral_param(title='SPEC_Spectral Parameters',savefig=True)
+  data_4FGL.dist_models(title='SPEC_Distribution of the spectral models', savefig=True)
+
   # CLASSIFICATION
   data_4FGL.classifier(True)
+
+  

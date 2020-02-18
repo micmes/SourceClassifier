@@ -416,6 +416,7 @@ class Fermi_Dataset:
 
     # Plot Learning curves
     logging.info('Started plotting the learning curves...')
+    plt.figure()
     plt.style.use('seaborn')
     plt.plot(train_sizes, train_scores_mean, label = 'Training error')
     plt.plot(train_sizes, validation_scores_mean, label = 'Validation error')
