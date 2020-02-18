@@ -65,7 +65,8 @@ class Fermi_Dataset:
     """
 	  The property prevents the user to accidentally modify the instance.
 	  """
-    return self._df
+    deepcopy = self._df.copy(deep=True)
+    return deepcopy
 
 
   def def_column(self, colnames, myfunc, newcolname='TEMP'):
@@ -134,6 +135,7 @@ class Fermi_Dataset:
                                               'that the given column is string type'
 
     new_df = self.df
+
     new_df[colname] = new_df[colname].apply(lambda x: x.strip().lower())
     new_df[colname] = new_df[colname].replace('', 'unassociated')
     logging.info('Column cleaned successfully.')
@@ -232,7 +234,6 @@ class Fermi_Dataset:
     assert color in self.df.columns, 'Color not valid. To see column names, type print(Obj.df.columns) .'
     assert (coord_type == 'equatorial' or coord_type == 'galactic'), 'Not valid value given for coord_type. Try with' \
                                                                      '"equatorial" or "galactic".'
-
     logging.info('Preparing data for the map...')
 
     color_label = color
@@ -240,6 +241,7 @@ class Fermi_Dataset:
     if coord_type == 'equatorial':
       lon_label = 'RAJ2000'
       lat_label = 'DEJ2000'
+
     if coord_type == 'galactic':
       lon_label = 'GLON'
       lat_label = 'GLAT'
@@ -250,7 +252,9 @@ class Fermi_Dataset:
 
     # convert deg values to RA
     lon = coord.Angle(lon * u.deg)
+
     lon = lon.wrap_at(180 * u.deg).radian
+
     lat = coord.Angle(lat * u.deg).radian
 
     # build dataframe
@@ -269,11 +273,12 @@ class Fermi_Dataset:
       ax.legend(loc='lower center', ncol=6)
     # else plot a colorbar
     elif color in self.df.columns and is_numeric_dtype(self.df[color_label]):
-      scat = ax.scatter(lon, lat, c=col.tolist(), **kwargs)
+      scat = ax.scatter(lon, lat, c=col.tolist(), **kwargs) #FIXME
       ax.set_xlabel(lon_label)
       ax.set_ylabel(lat_label)
       cbar = fig.colorbar(scat)
       cbar.set_label(color_label)
+      
     # else draw with no colors
     else:
       if color is not None:
@@ -394,7 +399,7 @@ class Fermi_Dataset:
                                                              #because we will predict them based on the decision tree
     X = df_filtered[df_filtered['CLASS1'] != 21].select_dtypes(exclude='object')    #Features
     X = X.fillna(X.mean())     #replace missing data with the mean of the column
-    
+
     # Create Decision Tree classifer 
     clf = DecisionTreeClassifier(criterion='gini', max_leaf_nodes=10, min_samples_leaf=5, max_depth=5)   #Limit depth (aka prune tree) to avoid overfitting 
     logging.info('Generated the Decision Tree Classifier.')
@@ -429,9 +434,8 @@ class Fermi_Dataset:
     logging.info('See output folder for the learning curves!')
 
     if predict_unassociated:
-      X_unassociated = self.df[self.df['CLASS1'] == 21].select_dtypes(exclude='object')
+      X_unassociated = df_clean[df_clean['CLASS1'] == 21].select_dtypes(exclude='object')
       X_unassociated = X_unassociated.fillna(X.mean())
       y_pred_unass = clf.predict(X_unassociated)
       counter = Counter(y_pred_unass)
       print(counter)
-

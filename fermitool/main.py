@@ -51,12 +51,14 @@ if __name__ == '__main__':
   data_4FGL.galactic_map(coord_type='galactic', title='LOCM_all_sources',
                          color='CLASS1', **map_kwargs)
   data_4FGL_cleaned = data_4FGL.clean_column('CLASS1')
-  data_4FGL_psr_pwn = data_4FGL_cleaned.filtering((data_4FGL.df['CLASS1'] == 'psr') | (data_4FGL.df['CLASS1'] == 'pwn'))
+  data_4FGL_psr_pwn = data_4FGL_cleaned.filtering(data_4FGL_cleaned.df['CLASS1'].str.match('(psr)|(pwn)'))
+
   data_4FGL_psr_pwn.galactic_map('galactic', title='LOCM_psr_pwn',
                                  color='CLASS1', **map_kwargs)
-  data_4FGL_cleaned.filtering(data_4FGL.df['CLASS1'] == 'psr').source_hist('GLAT', title='LOCH_GLAT_psr',
+
+  data_4FGL_cleaned.filtering(data_4FGL_cleaned.df['CLASS1'] == 'psr').source_hist('GLAT', title='LOCH_GLAT_psr',
                                                range=(-90,90), **hist_kwargs)
-  data_4FGL_cleaned.filtering(data_4FGL.df['CLASS1'] == 'pwn').source_hist('GLAT', title='LOCH_GLAT_pwn',
+  data_4FGL_cleaned.filtering(data_4FGL_cleaned.df['CLASS1'] == 'pwn').source_hist('GLAT', title='LOCH_GLAT_pwn',
                                                range=(-90,90), **hist_kwargs)
   # notice that here we're investigating another fits extension
   extended_4FGL.galactic_map('galactic', title='LOCM_extension', color='Model_SemiMajor', **map_kwargs)
@@ -73,7 +75,7 @@ if __name__ == '__main__':
   df_geom.source_hist('Geom_mean', title='LOCH_error_radii', range=(0,0.2), **hist_kwargs)
 
   #SPECTRAL PLOTS
-  data_4FGL.filtering(data_4FGL.df['Signif_Avg']>30).plot_spectral_param(title='SPEC_Spectral Parameters',savefig=True)
+  data_4FGL_cleaned.filtering(data_4FGL_cleaned.df['Signif_Avg']>30).plot_spectral_param(title='SPEC_Spectral Parameters',savefig=True)
   data_4FGL.dist_models(title='SPEC_Distribution of the spectral models', savefig=True)
 
   # CLASSIFICATION
