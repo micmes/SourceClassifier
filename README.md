@@ -8,7 +8,7 @@ An algorithm to classify the sources in the 4FGL catalog
 ## First install
 
 ### for Windows user
-We did not built a windows version of this package yet. So, we recommend to follow the instruction at https://docs.microsoft.com/it-it/windows/wsl/install-win10 to install a Linux environment (Ubuntu is preferred). After that, open bash and proceed with the following operations. 
+We haven't built a Windows version of this package yet. Therefore we recommend to follow the instructions at https://docs.microsoft.com/it-it/windows/wsl/install-win10 to install a Linux environment (Ubuntu is preferred). After that, open bash and proceed with the following operations. 
 
 ### for Ubuntu user
 Create a virtual environment and install all the required packages running the following lines:
@@ -17,7 +17,7 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
-It is strictly recommended to check for new packages once in a while, running the third line. 
+It is strongly recommended to check for new packages once in a while, running the third line. 
 
 ## Usage
 Every time you want to use this tool, you have to run
@@ -36,7 +36,7 @@ The second way makes use of the parsing module, so it is more interactive. Run:
 ```
 python argument_parser.py --argument
 ```
-where the option "argument" should be replace with an appropriate option supported by the parser. Further information can be found running
+where the option "argument" should be replaced with an appropriate option supported by the parser. Further information can be found running
 ```
 python argument_parser.py --help
 ```
