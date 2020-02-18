@@ -273,7 +273,7 @@ class Fermi_Dataset:
       ax.legend(loc='lower center', ncol=6)
     # else plot a colorbar
     elif color in self.df.columns and is_numeric_dtype(self.df[color_label]):
-      scat = ax.scatter(lon, lat, c=col.tolist(), **kwargs) #FIXME
+      scat = ax.scatter(lon, lat, c=col.tolist(), **kwargs)
       ax.set_xlabel(lon_label)
       ax.set_ylabel(lat_label)
       cbar = fig.colorbar(scat)
