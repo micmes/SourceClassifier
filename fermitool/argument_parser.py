@@ -11,6 +11,8 @@ Enjoy!
 
 
 from argparse import ArgumentParser
+from astropy.io import fits
+from astropy.table import Table
 from fermitool import *
 
 data_path = os.environ["SOURCE_ROOT"] + '/data/gll_psc_v21.fit'
@@ -25,6 +27,17 @@ t_astropy = Table(fits_data)
 
 col1D = [col1D for col1D in t_astropy.colnames if len(t_astropy[col1D].shape) <= 1]
 data = t_astropy[col1D].to_pandas()
+
+# Set some plot kwargs
+map_kwargs = {"cmap" : 'hsv',
+            "savefig" : True,
+            "marker" : '.',
+            "s" : 50}
+
+hist_kwargs = {"savefig" : True,
+                "bins" : 40,
+                "histtype" : 'step'}
+
 
 # define an istance
 data_4FGL = Fermi_Dataset(data)
@@ -54,20 +67,25 @@ if args.brightest:
 
 #Variability plots
 if args.variability:
-    data_4FGL.dist_variability(savefig=True)
-    data_4FGL.compare_variability(savefig=True)
+    data_nan_removed = data_4FGL.remove_nan_rows(['Variability_Index'])
+    data_nan_removed.source_hist(colname='Variability_Index', title='VAR_distribution_of_variability', savefig=True,
+                               xlog=True, ylog=True, range=(0,500), bins=200, histtype='step')
+    data_nan_removed.compare_variability(title='VAR_Comparison of Varibility index for 2 month intervals and that for 12 months', savefig=True)
 
 #Spectral plots
 if args.spectra:
-    data_4FGL.dist_models(savefig=True)
-    data_4FGL.plot_spectral_param(savefig=True)
+    data_4FGL.filtering(data_4FGL.df['Signif_Avg']>30).plot_spectral_param(title='SPEC_Spectral Parameters',savefig=True)
+    data_4FGL.dist_models(title='SPEC_Distribution of the spectral models', savefig=True)
 
 # Localization plots
 if args.localize:
-    data_4FGL.galactic_map('galactic', title='LOC_all_sources', savefig=True, color='CLASS1')
-    c = data_4FGL._df['CLASS1']
-    #print(data_4FGL._df[['ASSOC_FGL','ASSOC_TEV','CLASS1','CLASS2','ASSOC1','ASSOC2']].isin(['pwn']).any())
-    #print(data_4FGL.filtering((c == 'psr'))._df[['CLASS1','ASSOC1']])
-    data_4FGL.filtering((c == 'psr') | (c == 'pwn')).galactic_map('galactic', title='LOC_psr', savefig=True, color='CLASS1')
-
-print(args)
+    data_4FGL.galactic_map(coord_type='galactic', title='LOCM_all_sources',
+                         color='CLASS1', **map_kwargs)
+    data_4FGL_cleaned = data_4FGL.clean_column('CLASS1')
+    data_4FGL_psr_pwn = data_4FGL_cleaned.filtering((data_4FGL.df['CLASS1'] == 'psr') | (data_4FGL.df['CLASS1'] == 'pwn'))
+    data_4FGL_psr_pwn.galactic_map('galactic', title='LOCM_psr_pwn',
+                                    color='CLASS1', **map_kwargs)
+    data_4FGL_cleaned.filtering(data_4FGL.df['CLASS1'] == 'psr').source_hist('GLAT', title='LOCH_GLAT_psr',
+                                                range=(-90,90), **hist_kwargs)
+    data_4FGL_cleaned.filtering(data_4FGL.df['CLASS1'] == 'pwn').source_hist('GLAT', title='LOCH_GLAT_pwn',
+                                                range=(-90,90), **hist_kwargs)
