@@ -157,8 +157,10 @@ class Fermi_Dataset:
 
     try:
       new_df = self.df
+      numberofNa = new_df[collist].isnull().sum()
       new_df = new_df.dropna(subset=collist)
       logging.info('Cleaned NaN rows from {} columns.'.format(collist))
+      logging.info('Number of NaN per column: \n{}'.format(numberofNa))
 
       return Fermi_Dataset(new_df)
 
@@ -278,7 +280,7 @@ class Fermi_Dataset:
       ax.set_ylabel(lat_label)
       cbar = fig.colorbar(scat)
       cbar.set_label(color_label)
-      
+
     # else draw with no colors
     else:
       if color is not None:

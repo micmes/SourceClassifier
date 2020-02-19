@@ -6,6 +6,8 @@ from astropy.table import Table
 
 from fermitool import Fermi_Dataset
 
+import numpy as np
+
 if __name__ == '__main__':
 
   # import fits file
@@ -28,6 +30,7 @@ if __name__ == '__main__':
   col1D = [col1D for col1D in te_astropy.colnames if len(te_astropy[col1D].shape) <= 1]
   data = te_astropy[col1D].to_pandas()
   extended_4FGL = Fermi_Dataset(data)
+  print(extended_4FGL.df)
 
   # Set some plot kwargs
   map_kwargs = {"cmap" : 'hsv',
@@ -65,19 +68,20 @@ if __name__ == '__main__':
 
   # define geometric mean
   def geometric_mean(*args):
+    # takes n columns as inputs
     n = len(args)
-    return reduce(lambda x, y: x*y, *args) ** (1./n)
+    return np.power(np.array([x * y for x, y in zip(*args)]), 1./n)
 
   # define new column 'geometric_mean' and then plot source_hist
   df_remove_nan = data_4FGL.remove_nan_rows(['Conf_95_SemiMajor','Conf_95_SemiMinor'])
   df_geom = df_remove_nan.def_column(['Conf_95_SemiMajor','Conf_95_SemiMinor'], geometric_mean, 'Geom_mean')
-  df_geom.source_hist('Geom_mean', title='LOCH_error_radii', range=(0,0.2), **hist_kwargs)
+  df_geom.source_hist('Geom_mean', title='LOCH_error_radii', **hist_kwargs)
 
   #SPECTRAL PLOTS
   data_4FGL_cleaned.filtering(data_4FGL_cleaned.df['Signif_Avg']>30).plot_spectral_param(title='SPEC_Spectral Parameters',savefig=True)
   data_4FGL.dist_models(title='SPEC_Distribution of the spectral models', savefig=True)
 
   # CLASSIFICATION
-  data_4FGL.classifier(True)
+  #data_4FGL.classifier(True)
 
   
