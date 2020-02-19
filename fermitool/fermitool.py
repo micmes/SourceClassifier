@@ -116,7 +116,7 @@ class Fermi_Dataset:
       return Fermi_Dataset(new_df)
     except Exception as e:
       print('Oops! Give me a valid condition', e)
-      raise # for pytest?
+      raise
 
   def clean_column(self, colname):
     """
@@ -269,13 +269,10 @@ class Fermi_Dataset:
     # if values are discrete, then plot a legend
     if color == 'CLASS1':
       sns.scatterplot(x=lon_label, y=lat_label, hue=color_label, data=coord_df, **kwargs)
-
-      # ax.set_position(pos = [0.15, 0.2, 0.6, 0.6])
       ax.legend(loc='lower center', ncol=6)
 
     # else plot a colorbar
     elif color in self.df.columns and is_numeric_dtype(self.df[color_label]):
-
       scat = ax.scatter(lon, lat, c=col.tolist(), **kwargs)
       ax.set_xlabel(lon_label)
       ax.set_ylabel(lat_label)
