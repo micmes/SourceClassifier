@@ -30,11 +30,9 @@ if __name__ == '__main__':
   col1D = [col1D for col1D in te_astropy.colnames if len(te_astropy[col1D].shape) <= 1]
   data = te_astropy[col1D].to_pandas()
   extended_4FGL = Fermi_Dataset(data)
-  print(extended_4FGL.df)
 
   # Set some plot kwargs
-  map_kwargs = {"cmap" : 'hsv',
-                "savefig" : True,
+  map_kwargs = {"savefig" : True,
                 "marker" : '.',
                 "s" : 50}
 

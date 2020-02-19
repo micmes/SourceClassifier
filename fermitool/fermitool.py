@@ -273,12 +273,14 @@ class Fermi_Dataset:
                       data=coord_df, **kwargs)
       # ax.set_position(pos = [0.15, 0.2, 0.6, 0.6])
       ax.legend(loc='lower center', ncol=6)
+
     # else plot a colorbar
     elif color in self.df.columns and is_numeric_dtype(self.df[color_label]):
+
       scat = ax.scatter(lon, lat, c=col.tolist(), **kwargs)
       ax.set_xlabel(lon_label)
       ax.set_ylabel(lat_label)
-      cbar = fig.colorbar(scat)
+      cbar = fig.colorbar(scat, fraction=0.025, pad=0.04)
       cbar.set_label(color_label)
 
     # else draw with no colors
