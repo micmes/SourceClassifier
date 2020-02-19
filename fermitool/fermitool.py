@@ -252,7 +252,6 @@ class Fermi_Dataset:
 
     # convert deg values to RA
     lon = coord.Angle(lon * u.deg)
-
     lon = lon.wrap_at(180 * u.deg).radian
 
     lat = coord.Angle(lat * u.deg).radian
@@ -267,8 +266,8 @@ class Fermi_Dataset:
 
     # if values are discrete, then plot a legend
     if color == 'CLASS1':
-      sns.scatterplot(x=lon_label, y=lat_label, hue=color_label,
-                      data=coord_df, **kwargs)
+      sns.scatterplot(x=lon_label, y=lat_label, hue=color_label, data=coord_df, **kwargs)
+
       # ax.set_position(pos = [0.15, 0.2, 0.6, 0.6])
       ax.legend(loc='lower center', ncol=6)
     # else plot a colorbar
@@ -404,7 +403,7 @@ class Fermi_Dataset:
     clf = DecisionTreeClassifier(criterion='gini', max_leaf_nodes=10, min_samples_leaf=5, max_depth=5)   #Limit depth (aka prune tree) to avoid overfitting 
     logging.info('Generated the Decision Tree Classifier.')
 
-    # Generate learning curves (see tutorial https://www.dataquest.io/blog/learning-curves-machine-learning/)
+    # Generate accuracy curves 
     train_sizes, train_scores, validation_scores = learning_curve(estimator = clf,
                                                                   n_jobs = -1,
                                                                   X = X,
@@ -419,7 +418,7 @@ class Fermi_Dataset:
 
     logging.info("Accuracy: "+str(metrics.accuracy_score(y, y_pred)))     # Model Accuracy
 
-    # Plot Learning curves
+    # Plot curves
     logging.info('Started plotting the learning curves...')
     plt.figure()
     plt.style.use('seaborn')
@@ -437,5 +436,6 @@ class Fermi_Dataset:
       X_unassociated = df_clean[df_clean['CLASS1'] == 21].select_dtypes(exclude='object')
       X_unassociated = X_unassociated.fillna(X.mean())
       y_pred_unass = clf.predict(X_unassociated)
+      print
       counter = Counter(y_pred_unass)
       print(counter)
