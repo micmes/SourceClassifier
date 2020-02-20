@@ -58,8 +58,6 @@ class testFermiTool(unittest.TestCase):
 																	title='TEST_RA(J2000) with condition',
 																	savefig=True)
 
-		# TEST_DF.source_hist('SpectrumType', title='TEST_Spectralmodel_withsourcehist', savefig=True)
-
 	def test_cleanclasses(self):
 		"""
 		Test the clean classes function.
