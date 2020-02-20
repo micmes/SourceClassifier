@@ -2,7 +2,7 @@
 This program is a simple interactive tool aimed at visualizing the Fermi 4FGL data. In theory, 
 there are infinite filters, operations and plots that can be performed,
 but we decided to limit the user's freedom to modify the data for the sake of simplicity.
-There are four main categories of plots: Localization, Variability and Spectra.
+There are three main categories of plots: Localization, Variability and Spectra.
 The plots for each category are those implemented in the Fermi_Dataset class (see fermitool.py).
 The plots will be saved in the output file.
 The filtering operation consists in keeping the brightest sources of the catalog.
@@ -80,12 +80,9 @@ if args.spectra:
 # Localization plots
 if args.localize:
     data_4FGL.galactic_map(coord_type='galactic', title='LOCM_all_sources',
-                         color='CLASS1', **map_kwargs)
+                            color='CLASS1', **map_kwargs)
     data_4FGL_cleaned = data_4FGL.clean_column('CLASS1')
-    data_4FGL_psr_pwn = data_4FGL_cleaned.filtering((data_4FGL.df['CLASS1'] == 'psr') | (data_4FGL.df['CLASS1'] == 'pwn'))
+    data_4FGL_psr_pwn = data_4FGL_cleaned.filtering(data_4FGL_cleaned.df['CLASS1'].str.match('(psr)|(pwn)'))
+
     data_4FGL_psr_pwn.galactic_map('galactic', title='LOCM_psr_pwn',
                                     color='CLASS1', **map_kwargs)
-    data_4FGL_cleaned.filtering(data_4FGL.df['CLASS1'] == 'psr').source_hist('GLAT', title='LOCH_GLAT_psr',
-                                                range=(-90,90), **hist_kwargs)
-    data_4FGL_cleaned.filtering(data_4FGL.df['CLASS1'] == 'pwn').source_hist('GLAT', title='LOCH_GLAT_pwn',
-                                                range=(-90,90), **hist_kwargs)
