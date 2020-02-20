@@ -80,6 +80,6 @@ if __name__ == '__main__':
   data_4FGL.dist_models(title='SPEC_Distribution of the spectral models', savefig=True)
 
   # CLASSIFICATION
-  #data_4FGL.classifier(True)
+  data_4FGL.classifier(True)
 
   
