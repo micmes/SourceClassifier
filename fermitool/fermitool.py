@@ -116,7 +116,6 @@ class Fermi_Dataset:
       return Fermi_Dataset(new_df)
     except Exception as e:
       print('Oops! Give me a valid condition', e)
-      raise
 
   def clean_column(self, colname):
     """
@@ -423,8 +422,8 @@ class Fermi_Dataset:
     logging.info('Started plotting the learning curves...')
     plt.figure()
     plt.style.use('seaborn')
-    plt.plot(train_sizes, train_scores_mean, label = 'Training error')
-    plt.plot(train_sizes, validation_scores_mean, label = 'Validation error')
+    plt.plot(train_sizes, train_scores_mean, label = 'Training acc')
+    plt.plot(train_sizes, validation_scores_mean, label = 'Validation acc')
     plt.ylim(0,1)
     plt.ylabel('Accuracy', fontsize = 14)
     plt.xlabel('Training set size', fontsize = 14)
@@ -437,6 +436,5 @@ class Fermi_Dataset:
       X_unassociated = df_clean[df_clean['CLASS1'] == 21].select_dtypes(exclude='object')
       X_unassociated = X_unassociated.fillna(X.mean())
       y_pred_unass = clf.predict(X_unassociated)
-      print
       counter = Counter(y_pred_unass)
       print(counter)
