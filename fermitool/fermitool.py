@@ -167,7 +167,6 @@ class Fermi_Dataset:
       print("Oops! {} is not valid. Please notice that if a single column is given,"
             "it should be written as an iterable (for example: ['RAJ2000'] and not "
             "'RAJ2000'). To see column names, type print(Obj.df.columns)".format(collist))
-      raise
 
   def source_hist(self, colname, title='Histogram', savefig=False, xlog=False, ylog=False, **kwargs):
     """
